@@ -1,4 +1,4 @@
-const Ads = require("../models/Ads");
+const Orders = require("../models/Orders");
 
 // Create and Save a new Admin
 exports.Add = (req, res) => {
@@ -8,47 +8,17 @@ exports.Add = (req, res) => {
       status: false,
      });
   }  
-  Ads.Add( req, res);
+  Orders.Add( req, res);
 };
-exports.Delete = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.Delete( req, res);
-};
-exports.UpdateStatus = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.UpdateStatus( req, res);
-};
-
-exports.addImage = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.addImage( req, res);
-};
-
-
-exports.Get = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.Get( req, res);
-};
+// exports.Delete = (req, res) => {
+//   if (!req.body) {
+//     res.json({
+//       message: "Content can not be empty!",
+//       status: false,
+//      });
+//   }  
+//   Orders.Delete( req, res);
+// };
 
 exports.GetAll = (req, res) => {
   if (!req.body) {
@@ -57,24 +27,56 @@ exports.GetAll = (req, res) => {
       status: false,
      });
   }  
-  Ads.GetAll( req, res);
+  Orders.GetAll( req, res);
+};
+exports.GetByUserID = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Orders.GetByUserID( req, res);
 };
 
-exports.GetByScreen = (req, res) => {
+
+exports.GetByMarchandiseID = (req, res) => {
   if (!req.body) {
     res.json({
       message: "Content can not be empty!",
       status: false,
      });
   }  
-  Ads.GetByScreen( req, res);
+  Orders.GetByMarchandiseID( req, res);
 };
-exports.Update = (req, res) => {
+
+
+exports.GetByStatus = (req, res) => {
   if (!req.body) {
     res.json({
       message: "Content can not be empty!",
       status: false,
      });
   }  
-  Ads.Update( req, res);
+  Orders.GetByStatus( req, res);
+};
+
+exports.GetUserOrders_ByStatus = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Orders.GetUserOrders_ByStatus( req, res);
+};
+
+exports.changeOrderStatus = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Orders.changeOrderStatus( req, res);
 };

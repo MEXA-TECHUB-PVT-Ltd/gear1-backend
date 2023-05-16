@@ -1,8 +1,12 @@
 const { sql } = require("../config/db.config");
 
 const SocialMedia = function (SocialMedia) {
-	this.userID = SocialMedia.userID
-	this.docID = SocialMedia.docID;
+	this.userid = SocialMedia.userid
+	this.facebook = SocialMedia.facebook;
+	this.twitter = SocialMedia.twitter;
+	this.insta = SocialMedia.insta;
+	this.linkedin = SocialMedia.linkedin;
+
 };
 
 SocialMedia.Add = async (req, res) => {

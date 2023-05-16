@@ -231,6 +231,28 @@ Items.GetItem = (req, res) => {
 }
 
 
+Items.GetLocIDItems = (req, res) => {
+	sql.query(`SELECT * FROM "items" WHERE location_id = $1 `
+		, [req.body.location_id], (err, result) => {
+			if (err) {
+				console.log(err);
+				res.json({
+					message: "Try Again",
+					status: false,
+					err
+				});
+			} else {
+				res.json({
+					message: "User's items data by location",
+					status: true,
+					result: result.rows,
+				});
+			}
+		});
+
+}
+
+
 Items.GetUserItems = (req, res) => {
 	sql.query(`SELECT * FROM "items" WHERE userid = $1 `
 		, [req.body.user_ID], (err, result) => {

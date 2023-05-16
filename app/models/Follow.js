@@ -144,8 +144,12 @@ Follow.Follow = async (req, res) => {
 	}
 }
 
-Follow.GetFollowers = (req, res) => {
-	sql.query(`SELECT  "user".username, "user".email , "user".phone,
+Follow.GetFollowers = async (req, res) => {
+	const user = await sql.query(`SELECT COUNT(*) AS count FROM "followusers"
+	 where user_id = $1 
+	  `, [req.body.user_ID]);
+
+	sql.query(`SELECT "user".username, "user".email , "user".phone,
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
 	 AS Cover_Image  FROM "followusers" JOIN "user" 
 	ON "followusers".follow_by_user_id = "user".id where "followusers".user_id = $1;`
@@ -161,6 +165,7 @@ Follow.GetFollowers = (req, res) => {
 			res.json({
 				message: "User's Followers List",
 				status: true,
+				totalFollowers: user.rows[0].count,
 				result: result.rows,
 			});
 		}
@@ -168,7 +173,10 @@ Follow.GetFollowers = (req, res) => {
 
 }
 
-Follow.GetFollowings = (req, res) => {
+Follow.GetFollowings = async (req, res) => {
+	const user = await sql.query(`SELECT COUNT(*) AS count FROM "followusers"
+	where follow_by_user_id = $1 
+	 `, [req.body.user_ID]);
 	sql.query(`SELECT  "user".username, "user".email , "user".phone,
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
 	 AS Cover_Image FROM "followusers" JOIN "user" 
@@ -184,7 +192,8 @@ Follow.GetFollowings = (req, res) => {
 		} else {
 			res.json({
 				message: "User's Following List",
-				status: true,
+				status: true,	
+				totalFollowings: user.rows[0].count,
 				result: result.rows,
 			});
 		}

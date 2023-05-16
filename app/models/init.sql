@@ -17,8 +17,6 @@ CREATE TABLE IF NOT EXISTS public.User (
         deviceToken text,
         status text,
         type text,
-        followers INTEGER,
-        followings INTEGER,
         createdAt timestamp,
         updatedAt timestamp ,
         PRIMARY KEY (id));
@@ -68,6 +66,7 @@ CREATE TABLE IF NOT EXISTS public.ads (
 CREATE TABLE IF NOT EXISTS public.categories (
         id SERIAL,
         name text NOT NULL,
+        image text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));
@@ -114,12 +113,13 @@ CREATE TABLE IF NOT EXISTS public.rateusers (
 
 CREATE TABLE IF NOT EXISTS public.merchandise (
         id SERIAL NOT NULL,
-        userid SERIAL NOT NULL,
+        adminID SERIAL NOT NULL,
         images TEXT[],
         name text,
         price text,
         category_id text,
         description text,
+        location_id INTEGER,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));
@@ -142,6 +142,46 @@ CREATE TABLE IF NOT EXISTS public.notifications (
         updatedAt timestamp ,
         PRIMARY KEY (id));
 
+CREATE TABLE IF NOT EXISTS public.locations (
+        id SERIAL,
+        location_name text,
+        user_id SERIAL NOT NULL,
+        createdAt timestamp,
+        updatedAt timestamp ,
+        PRIMARY KEY (id));
+
+
+CREATE TABLE IF NOT EXISTS public.dailydeals (
+        id SERIAL NOT NULL,
+        image TEXT,
+        description text,
+        title text,
+        ends_at text,
+        status text,
+        createdat timestamp NOT NULL,
+        updatedat timestamp ,
+        PRIMARY KEY (id));
+
+
+CREATE TABLE IF NOT EXISTS public.orders (
+        id SERIAL NOT NULL,
+        user_id SERIAL NOT NULL,
+        merchandise_id SERIAL NOT NULL,
+		ordered_at text,
+        status text,
+        createdAt timestamp NOT NULL,
+        updatedAt timestamp ,
+        PRIMARY KEY (id));
+
+CREATE TABLE IF NOT EXISTS public.logos (
+        id SERIAL NOT NULL,
+        image text,
+        link text,
+		screen_id SERIAL NOT NULL,
+        active_status text,
+        createdAt timestamp NOT NULL,
+        updatedAt timestamp ,
+        PRIMARY KEY (id))
 
 -- CREATE TABLE IF NOT EXISTS public.SubscriptionPlan (
 --         id SERIAL NOT NULL,

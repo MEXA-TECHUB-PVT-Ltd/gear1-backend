@@ -12,11 +12,17 @@ const sql = new Pool({
   database: "gear1",
   max: 5,
 
+  //   host : https://postgres-staging-projects.mtechub.com
+  // port : 5432
+  // username : gearoneuser
+  // db : gearone
+  // passoword : mtechub
+
   // host: 'https://postgres-staging-projects.mtechub.com/',
   // port: 5432,
-  // user: 'docmagician',
-  // passoword: 'mtechub123',
-  // userdb: 'docmagician',
+  // username: "gearoneuser",
+  // passoword: 'mtechub',
+  // userdb: 'gearone',
   // max: 10
 
   // host: 'postgres-node-staging-projects.mtechub.com',

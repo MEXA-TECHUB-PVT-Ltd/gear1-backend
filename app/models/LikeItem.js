@@ -181,7 +181,10 @@ LikeItem.UnLikeItem = async (req, res) => {
 	}
 }
 
-LikeItem.ViewLikeItem = (req, res) => {
+LikeItem.ViewLikeItem = async (req, res) => {
+	const data = await sql.query(`select COUNT(*) AS count from "likeitems" where user_id = ${req.body.user_ID} 
+	AND user_id = ${req.body.user_ID} `);
+
 	sql.query(`SELECT  "user".username, "user".email , "user".phone,
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
 	 AS Cover_Image ,"user".status ,
@@ -199,11 +202,34 @@ LikeItem.ViewLikeItem = (req, res) => {
 			res.json({
 				message: "item Details",
 				status: true,
+				AllLikes : data.rows[0].count,
 				result: result.rows,
 			});
 		}
 	});
 
 }
+
+LikeItem.ViewItemLikes = async (req, res) => {
+	sql.query(`select COUNT(*) AS count from "likeitems" where item_id = $1 
+	`,[req.body.item_ID] ,(err, result) => {
+		if (err) {
+			console.log(err);
+			res.json({
+				message: "Try Again",
+				status: false,
+				err
+			});
+		} else {
+			res.json({
+				message: "item likes",
+				status: true,
+				AllLikes : result.rows,
+			});
+		}
+	});
+
+}
+
 
 module.exports = LikeItem;

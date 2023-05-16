@@ -1,4 +1,4 @@
-const Ads = require("../models/Ads");
+const Logos = require("../models/Logos");
 
 // Create and Save a new Admin
 exports.Add = (req, res) => {
@@ -8,26 +8,17 @@ exports.Add = (req, res) => {
       status: false,
      });
   }  
-  Ads.Add( req, res);
+  Logos.Add( req, res);
 };
-exports.Delete = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.Delete( req, res);
-};
-exports.UpdateStatus = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.UpdateStatus( req, res);
-};
+// exports.Delete = (req, res) => {
+//   if (!req.body) {
+//     res.json({
+//       message: "Content can not be empty!",
+//       status: false,
+//      });
+//   }  
+//   Logos.Delete( req, res);
+// };
 
 exports.addImage = (req, res) => {
   if (!req.body) {
@@ -36,7 +27,7 @@ exports.addImage = (req, res) => {
       status: false,
      });
   }  
-  Ads.addImage( req, res);
+  Logos.addImage( req, res);
 };
 
 
@@ -47,7 +38,7 @@ exports.Get = (req, res) => {
       status: false,
      });
   }  
-  Ads.Get( req, res);
+  Logos.Get( req, res);
 };
 
 exports.GetAll = (req, res) => {
@@ -57,7 +48,7 @@ exports.GetAll = (req, res) => {
       status: false,
      });
   }  
-  Ads.GetAll( req, res);
+  Logos.GetAll( req, res);
 };
 
 exports.GetByScreen = (req, res) => {
@@ -67,8 +58,27 @@ exports.GetByScreen = (req, res) => {
       status: false,
      });
   }  
-  Ads.GetByScreen( req, res);
+  Logos.GetByScreen( req, res);
 };
+exports.GetActiveByScreen = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Logos.GetActiveByScreen( req, res);
+};
+exports.UpdateStatus = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Logos.UpdateStatus( req, res);
+};
+
 exports.Update = (req, res) => {
   if (!req.body) {
     res.json({
@@ -76,5 +86,5 @@ exports.Update = (req, res) => {
       status: false,
      });
   }  
-  Ads.Update( req, res);
+  Logos.Update( req, res);
 };

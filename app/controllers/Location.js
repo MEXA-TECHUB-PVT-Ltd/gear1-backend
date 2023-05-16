@@ -1,4 +1,4 @@
-const Categories = require("../models/Categories");
+const Location = require("../models/Location");
 
 // Create and Save a new Admin
 exports.Add = (req, res) => {
@@ -8,17 +8,18 @@ exports.Add = (req, res) => {
       status: false,
      });
   }  
-  Categories.Add( req, res);
+  Location.Add( req, res);
 };
-exports.addImage = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Categories.addImage( req, res);
-};
+// exports.Delete = (req, res) => {
+//   if (!req.body) {
+//     res.json({
+//       message: "Content can not be empty!",
+//       status: false,
+//      });
+//   }  
+//   Location.Delete( req, res);
+// };
+
 exports.Update = (req, res) => {
   if (!req.body) {
     res.json({
@@ -26,33 +27,35 @@ exports.Update = (req, res) => {
       status: false,
      });
   }  
-  Categories.Update( req, res);
+  Location.Update( req, res);
 };
 
-exports.Delete= (req, res) => {
+exports.ViewAllLocationUser = (req, res) => {
   if (!req.body) {
     res.json({
       message: "Content can not be empty!",
       status: false,
      });
   }  
-  Categories.Delete( req, res);
+  Location.ViewAllLocationUser( req, res);
 };
-exports.GetAllCategories = (req, res) => {
+
+exports.ViewAllLocation = (req, res) => {
   if (!req.body) {
     res.json({
       message: "Content can not be empty!",
       status: false,
      });
   }  
-  Categories.GetAllCategories( req, res);
+  Location.ViewAllLocation( req, res);
 };
-exports.GetCategories = (req, res) => {
+
+exports.ViewALocation = (req, res) => {
   if (!req.body) {
     res.json({
       message: "Content can not be empty!",
       status: false,
      });
   }  
-  Categories.GetCategories( req, res);
+  Location.ViewALocation( req, res);
 };

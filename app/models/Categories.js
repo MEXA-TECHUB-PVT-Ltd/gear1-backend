@@ -2,6 +2,8 @@ const {sql} = require("../config/db.config");
 
 const Categories = function (Categories) {
 	this.name = Categories.name;
+	this.image = Categories.image;
+
 };
 
 Categories.Add = async (req, res) => {
@@ -14,6 +16,7 @@ Categories.Add = async (req, res) => {
 		sql.query(`CREATE TABLE IF NOT EXISTS public.categories (
         id SERIAL,
         name text NOT NULL,
+		image text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id))  ` , (err, result) => {
@@ -49,6 +52,62 @@ Categories.Add = async (req, res) => {
 		});
 	}
 }
+
+Categories.addImage = async (req, res) => {
+	if (req.body.id === '') {
+		res.json({
+			message: "id is required",
+			status: false,
+		});
+	} else {
+		const userData = await sql.query(`select * from "categories" where id = $1`, [req.body.id]);
+		if (userData.rowCount === 1) {
+
+			let photo = userData.rows[0].image;
+			// let image = userData.rows[0].image;
+			// let cover_image = userData.rows[0].cover_image;
+
+			let { id } = req.body;
+			console.log(req.file)
+			if (req.file) {
+				const { path } = req.file;
+				photo = path;
+			}
+
+			sql.query(`UPDATE "categories" SET image = $1 WHERE id = $2;`,
+				[photo, id], async (err, result) => {
+					if (err) {
+						console.log(err);
+						res.json({
+							message: "Try Again",
+							status: false,
+							err
+						});
+					} else {
+						if (result.rowCount === 1) {
+							const data = await sql.query(`select * from "categories" where id = $1`, [req.body.id]);
+							res.json({
+								message: "categories Image added Successfully!",
+								status: true,
+								result: data.rows,
+							});
+						} else if (result.rowCount === 0) {
+							res.json({
+								message: "Not Found",
+								status: false,
+							});
+						}
+					}
+				});
+		} else {
+			res.json({
+				message: "Not Found",
+				status: false,
+			});
+		}
+	}
+}
+
 
 Categories.GetCategories  = (req, res) => {
 	sql.query(`SELECT * FROM "categories" WHERE id = ${req.body.Category_ID};`, (err, result) => {
