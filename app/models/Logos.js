@@ -135,7 +135,7 @@ Logos.Get = (req, res) => {
 }
 
 Logos.GetAll = async (req, res) => {
-	const data = await sql.query(`SELECT COUNT(*) AS AllLogos FROM "logos"`)
+	const data = await sql.query(`SELECT COUNT(*) AS count FROM "logos"`)
 	sql.query(`SELECT "logos".*, "screens".name AS screen_name FROM "logos" JOIN "screens"
 	 ON "logos".screen_id = "screens".id`, (err, result) => {
 		if (err) {
@@ -146,13 +146,14 @@ Logos.GetAll = async (req, res) => {
 				err
 			});
 		} else {
-			result.rows.push({
-				allLogos:
-					data.rows[0].allLogos
-			});
+			// result.rows.push({
+			// 	allLogos:
+			// 		data.rows[0].allLogos
+			// });
 			res.json({
 				message: "Logo Data",
 				status: true,
+				count: data.rows.count,
 				result: result.rows,
 			});
 		}

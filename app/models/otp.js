@@ -221,9 +221,9 @@ otp.verifyOTPSignIn = async (req, res) => {
         const email = req.body.email;
         const otp = req.body.otp;
         const found_email_query = `SELECT * FROM otp WHERE email = $1 AND otp = $2 AND type = 'signIn' `
-        const result = await sql.query(found_email_query, [email, otp])
-        if (result.rowCount > 0) {
-            sql.query(`SELECT * FROM "admin" WHERE email = $1`, [req.body.email], (err, result) => {
+        const FoundMailresult = await sql.query(found_email_query, [email, otp])
+        if (FoundMailresult.rowCount > 0) {
+            sql.query(`SELECT * FROM "admin" WHERE email = $1`, [req.body.email], (err,AdminrResult) => {
                 if (err) {
                     console.log(err);
                     res.json({
@@ -233,14 +233,14 @@ otp.verifyOTPSignIn = async (req, res) => {
                     });
                 }
                 else {
-                    sql.query(`DELETE FROM otp WHERE id = $1;`, [result.rows[0].id], (err, result) => { });
-                    const token = jwt.sign({ id: result.rows[0].id }, 'IhTRsIsUwMyHAmKsA', {
+                    sql.query(`DELETE FROM otp WHERE id = $1;`, [FoundMailresult.rows[0].id], (err, result) => { });
+                    const token = jwt.sign({ id: AdminrResult.rows[0].id }, 'IhTRsIsUwMyHAmKsA', {
                         expiresIn: "7d",
                     });
                     res.json({
                         message: "Login Successful",
                         status: true,
-                        result: result.rows,
+                        result: AdminrResult.rows,
                         token
                     });
                 }

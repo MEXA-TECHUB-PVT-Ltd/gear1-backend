@@ -21,6 +21,16 @@ exports.signIn = (req, res) => {
   otp.VerifyEmailSignIn( req, res);
 };
 
+exports.GetAdminByID = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  otp.GetAdminByID( req, res);
+};
+
 exports.verifyOTPSignIn = (req, res) => {
   if (!req.body) {
     res.json({
