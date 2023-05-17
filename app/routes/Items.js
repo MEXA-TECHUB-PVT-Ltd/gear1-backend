@@ -16,6 +16,7 @@ module.exports = app => {
     router.post("/get_all_items", Items.GetAllItems);
     router.post("/get_items_by_category", Items.GetItemsByCategory);
     router.post("/get_items_by_user", Items.GetUserItems);
+    router.post("/get_items_by_loc_id", Items.GetLocIDItems);
 
 
     app.use("/items", router);

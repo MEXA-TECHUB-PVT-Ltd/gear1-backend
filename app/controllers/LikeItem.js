@@ -19,6 +19,15 @@ exports.UnLikeItem = (req, res) => {
   }  
   LikeItem.UnLikeItem( req, res);
 };
+exports.ViewItemLikes = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  LikeItem.ViewItemLikes( req, res);
+};
 
 exports.ViewLikeItem = (req, res) => {
   if (!req.body) {

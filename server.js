@@ -1,5 +1,6 @@
 const express = require("express");
 // const fileupload = require("express-fileupload");
+const schedule = require('node-schedule');
 
 // const bodyParser = require("body-parser"); /* deprecated */
 const cors = require("cors");
@@ -15,8 +16,8 @@ var corsOptions = {
 };
 app.use(cors()) // Use this
 app.use(cors(corsOptions));
-app.use(bodyParser.json({limit: '50mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json());
 // app.use(fileupload());
 app.use(express.static("files"));
@@ -30,19 +31,19 @@ app.use("/images_uploads", express.static("images_uploads"))
 server.listen(80);
 io.on('connection', function (socket) {
   console.log(socket);
-      socket.emit('pushNotification', { success: true, msg: 'hello' });
-    
-    });
+  socket.emit('pushNotification', { success: true, msg: 'hello' });
+
+});
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true })); /* bodyParser.urlencoded() is deprecated */
 
 app.get("/", (req, res) => {
-  
+
   io.on('connection', function (socket) {
-console.log(socket);
+    console.log(socket);
     socket.emit('pushNotification', { success: true, msg: 'hello' });
-  
+
   });
   res.json({ message: "Welcome to Gear 1" });
 
@@ -62,6 +63,10 @@ require("./app/routes/RateUser")(app);
 require("./app/routes/Merchandise")(app);
 require("./app/routes/Follow")(app);
 require("./app/routes/Notifications")(app);
+require("./app/routes/Location")(app);
+require("./app/routes/DailyDeals")(app);
+require("./app/routes/Orders")(app);
+require("./app/routes/Logos")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8082;

@@ -11,8 +11,6 @@ const User = function (User) {
 	this.status = User.status;
 	this.type = User.type;
 	this.deviceToken = User.deviceToken;
-	this.followers = Items.followers;
-	this.followings = Items.followings;
 
 };
 User.create = async (req, res) => {
@@ -27,8 +25,6 @@ User.create = async (req, res) => {
 		deviceToken text,
         status text,
         type text,
-		followers INTEGER,
-		followings INTEGER,
         createdAt timestamp,
         updatedAt timestamp ,
         PRIMARY KEY (id)); ` , async (err, result) => {
@@ -59,10 +55,10 @@ User.create = async (req, res) => {
 					});
 				} else if (checkResult.rows.length === 0) {
 					const { phone, country_code, deviceToken } = req.body;
-					const query = `INSERT INTO "user" (id, phone, country_code, deviceToken, followers,followings  ,createdat ,updatedat )
-                            VALUES (DEFAULT, $1, $2,$3,$4,$5, 'NOW()','NOW()' ) RETURNING * `;
+					const query = `INSERT INTO "user" (id, phone, country_code, deviceToken  ,createdat ,updatedat )
+                            VALUES (DEFAULT, $1, $2,$3, 'NOW()','NOW()' ) RETURNING * `;
 					const foundResult = await sql.query(query,
-						[phone, country_code, deviceToken, '0', '0']);
+						[phone, country_code, deviceToken]);
 					if (foundResult.rows.length > 0) {
 						if (err) {
 							res.json({

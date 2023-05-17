@@ -20,6 +20,17 @@ exports.Delete = (req, res) => {
   Items.Delete( req, res);
 };
 
+exports.GetLocIDItems = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Items.GetLocIDItems( req, res);
+};
+
+
 exports.Update = (req, res) => {
   if (!req.body) {
     res.json({

@@ -112,6 +112,59 @@ ads.addImage = async (req, res) => {
 }
 
 
+ads.UpdateStatus = async (req, res) => {
+	if (req.body.adID === '') {
+		res.json({
+			message: "id is required",
+			status: false,
+		});
+	} else {
+		const userData = await sql.query(`select * from "ads"
+		 where id = $1 `, [req.body.adID]);
+
+		if (userData.rowCount === 1) {
+
+			const oldActive_status = userData.rows[0].active_status;
+
+			let { adID, active_status } = req.body;
+			if (active_status === undefined || active_status === '') {
+				active_status = oldActive_status;
+			}
+
+			sql.query(`UPDATE "ads" SET active_status = $1 WHERE id = $2;`,
+				[ active_status, adID], async (err, result) => {
+					if (err) {
+						console.log(err);
+						res.json({
+							message: "Try Again",
+							status: false,
+							err
+						});
+					} else {
+						if (result.rowCount === 1) {
+							const data = await sql.query(`select * from "ads" where id = $1`, [req.body.adID]);
+							res.json({
+								message: "ad status Updated Successfully!",
+								status: true,
+								result: data.rows,
+							});
+						} else if (result.rowCount === 0) {
+							res.json({
+								message: "Not Found",
+								status: false,
+							});
+						}
+					}
+				});
+		} else {
+			res.json({
+				message: "Not Found",
+				status: false,
+			});
+		}
+	}
+}
+
 
 
 ads.Get = (req, res) => {

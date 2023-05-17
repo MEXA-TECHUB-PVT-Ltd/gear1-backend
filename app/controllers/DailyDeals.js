@@ -1,4 +1,4 @@
-const Ads = require("../models/Ads");
+const DailyDeals = require("../models/DailyDeals");
 
 // Create and Save a new Admin
 exports.Add = (req, res) => {
@@ -8,67 +8,18 @@ exports.Add = (req, res) => {
       status: false,
      });
   }  
-  Ads.Add( req, res);
+  DailyDeals.Add( req, res);
 };
-exports.Delete = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.Delete( req, res);
-};
-exports.UpdateStatus = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.UpdateStatus( req, res);
-};
+// exports.Delete = (req, res) => {
+//   if (!req.body) {
+//     res.json({
+//       message: "Content can not be empty!",
+//       status: false,
+//      });
+//   }  
+//   DailyDeals.Delete( req, res);
+// };
 
-exports.addImage = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.addImage( req, res);
-};
-
-
-exports.Get = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.Get( req, res);
-};
-
-exports.GetAll = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.GetAll( req, res);
-};
-
-exports.GetByScreen = (req, res) => {
-  if (!req.body) {
-    res.json({
-      message: "Content can not be empty!",
-      status: false,
-     });
-  }  
-  Ads.GetByScreen( req, res);
-};
 exports.Update = (req, res) => {
   if (!req.body) {
     res.json({
@@ -76,5 +27,55 @@ exports.Update = (req, res) => {
       status: false,
      });
   }  
-  Ads.Update( req, res);
+  DailyDeals.Update( req, res);
+};
+
+exports.GetADailyDeal = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  DailyDeals.GetADailyDeal( req, res);
+};
+
+exports.GetAllDailyDeals = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  DailyDeals.GetAllDailyDeals( req, res);
+};
+
+exports.GetAllActiveDeals = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  DailyDeals.GetAllActiveDeals( req, res);
+};
+
+exports.UpdateStatus = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  DailyDeals.UpdateStatus( req, res);
+};
+
+exports.addImages = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  DailyDeals.addImages( req, res);
 };

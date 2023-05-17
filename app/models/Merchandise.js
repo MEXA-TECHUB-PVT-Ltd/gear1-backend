@@ -1,33 +1,34 @@
 const { sql } = require("../config/db.config");
 
 const Merchandise = function (Merchandise) {
-	this.userID = Merchandise.userID
+	this.adminID = Merchandise.adminID
 	this.images = Merchandise.images;
 	this.name = Merchandise.name;
 	this.price = Merchandise.price;
 	this.category_id = Merchandise.category_id;
 	this.description = Merchandise.description;
-	// this.likes = Merchandise.likes;
+	this.location_id = Merchandise.location_id;
 	// this.shares = Merchandise.shares;
 };
 
 Merchandise.Add = async (req, res) => {
-	if (!req.body.userID || req.body.userID === '') {
+	if (!req.body.adminID || req.body.adminID === '') {
 		res.json({
 			message: "Please Enter user-ID",
 			status: false,
 		});
 	} else {
-		// likes INTEGER,
+		// location INTEGER,
 		// shares INTEGER,	
 		sql.query(`CREATE TABLE IF NOT EXISTS public.merchandise (
         id SERIAL NOT NULL,
-        userid SERIAL NOT NULL,
+        adminID SERIAL NOT NULL,
         images TEXT[],
         name text,
 		price text,
         category_id text,
         description text,
+		location_id INTEGER,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));` , (err, result) => {
@@ -38,12 +39,12 @@ Merchandise.Add = async (req, res) => {
 					err
 				});
 			} else {
-				sql.query(`INSERT INTO merchandise (id, userid ,images, name,price,category_id,description , createdAt ,updatedAt )
-                            VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,  'NOW()', 'NOW()') RETURNING * `
-					, [req.body.userID, [], req.body.name, req.body.price,
-					req.body.category_id, req.body.description], (err, result) => {
+				sql.query(`INSERT INTO merchandise (id, adminID ,images, name,price,category_id,description,location_id , createdAt ,updatedAt )
+                            VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6, $7 , 'NOW()', 'NOW()') RETURNING * `
+					, [req.body.adminID, [], req.body.name, req.body.price,
+					req.body.category_id, req.body.description, req.body.location_id], (err, result) => {
 						if (err) {
-
+							console.log(err);
 							res.json({
 								message: "Try Again",
 								status: false,
@@ -142,8 +143,10 @@ Merchandise.addImages = async (req, res) => {
 
 
 Merchandise.GetMerchandise = (req, res) => {
-	sql.query(`SELECT "merchandise".* , "categories".name AS Catagory_name  FROM "merchandise" JOIN "categories" 
-	ON  CAST( "merchandise".category_id AS INT) = "categories".id WHERE "merchandise".id = $1 `
+	sql.query(`SELECT "merchandise".* , "categories".name AS Catagory_name, "locations".location_name 
+	 FROM "merchandise" JOIN "categories" 
+	ON  CAST( "merchandise".category_id AS INT) = "categories".id 
+	JOIN "locations" ON "merchandise".location_id = "locations".id WHERE "merchandise".id = $1 `
 		, [req.body.Merchandise_ID], (err, result) => {
 			if (err) {
 				console.log(err);
@@ -165,8 +168,10 @@ Merchandise.GetMerchandise = (req, res) => {
 
 
 Merchandise.GetAllMerchandise = (req, res) => {
-	sql.query(`SELECT "merchandise".* , "categories".name AS Catagory_name  FROM "merchandise" JOIN "categories" 
-	ON  CAST( "merchandise".category_id AS INT) = "categories".id `
+	sql.query(`SELECT "merchandise".* , "categories".name AS Catagory_name, "locations".location_name 
+	FROM "merchandise" JOIN "categories" 
+   ON  CAST( "merchandise".category_id AS INT) = "categories".id 
+   JOIN "locations" ON "merchandise".location_id = "locations".id `
 		, (err, result) => {
 			if (err) {
 				console.log(err);
