@@ -202,4 +202,34 @@ Follow.GetFollowings = async (req, res) => {
 }
 
 
+Follow.CheckStatus = (req, res) => {
+	sql.query(`SELECT * FROM followusers WHERE follow_by_user_id = $1
+	 AND user_ID =$2;`, [req.body.viewed_user_ID, req.body.user_ID], (err, result) => {
+		if (err) {
+			res.json({
+				message: "Try Again",
+				status: false,
+				err
+			});
+		} else {
+			if (result.rowCount > 0) {
+				res.json({
+					message: "Current User is followed by that User",
+					status: true,
+					Followed : "true",
+					result: result.rows
+				});
+
+			} else {
+				res.json({
+					message: "Current User Isn't followed by that User",
+					status: true,
+					Followed : "false",
+				});
+			}
+		}
+	});
+}
+
+
 module.exports = Follow;

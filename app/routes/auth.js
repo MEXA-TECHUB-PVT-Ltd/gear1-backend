@@ -12,7 +12,6 @@ module.exports = app => {
     router.put("/change_number", Auth.ChangeNumber);
     router.put("/add_image", upload.single('image'),  Auth.addImage);
     router.put("/add_cover_image", upload.single('image'),  Auth.addCoverImage);
-
     router.put("/resetPassword", Auth.passwordReset);
     router.post("/verifyEmail", Auth.verifyEmail);
     router.post("/verifyOTP", Auth.verifyOTP)

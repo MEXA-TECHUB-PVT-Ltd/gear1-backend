@@ -372,40 +372,30 @@ User.ChangeNumber = async (req, res) => {
 	}
 }
 
-// User.GooglesignIn = async function (req, res) {
-// 	sql.query(`SELECT * FROM "user" WHERE email = $1`, [req.body.email], (err, result) => {
-// 		if (err) {
-// 			console.log(err);
-// 			res.json({
-// 				message: "Try Again",
-// 				status: false,
-// 				err
-// 			});
-// 		}
-// 		else {
-// 			if (result.rows.length === 0) {
-// 				res.json({
-// 					message: "User Not Found",
-// 					status: false,
-// 				});
-// 			} else {
-// 					const token = jwt.sign({ id: result.rows[0].id }, 'IhTRsIsUwMyHAmKsA', {
-// 						expiresIn: "7d",
-// 					});
-// 					res.json({
-// 						message: "Login Successful",
-// 						status: true,
-// 						result: result.rows,
-// 						token
-// 					});
-// 			}
-// 		}
-// 	});
-// }
-
-
-User.SpecificUser = (req, res) => {
-	sql.query(`SELECT * FROM "user" WHERE  id = $1`, [req.params.id], (err, result) => {
+User.SpecificUser = async (req, res) => {
+	const followings = await sql.query(`SELECT COUNT(*) AS followings FROM "followusers"
+	where follow_by_user_id = $1 
+	 `, [req.params.id]);
+	 const ratings = await sql.query(`SELECT COUNT(*) AS totalRatings FROM "rateusers"
+	 where user_id = $1 
+	  `, [req.params.id]);
+	  const avgRatings = await sql.query(`SELECT rating FROM "rateusers"
+	  where user_id = $1 
+	   `, [req.params.id]);
+	   console.log(avgRatings.rowCount);
+	   let num = 0;
+	   for(let i = 0; i < avgRatings.rowCount; i++){
+		console.log(avgRatings.rows[i].rating);
+			num += parseInt(avgRatings.rows[i].rating);
+	   }
+	   console.log(num);
+	   let avg = (num/avgRatings.rowCount)
+	   let finalAvg = avg.toFixed(2);
+	   console.log("avg : "+finalAvg);
+	  const followers = await sql.query(`SELECT COUNT(*) AS followers FROM "followusers"
+	 where user_id = $1 
+	  `, [req.params.id]);
+	sql.query(`SELECT *  FROM "user" WHERE  id = $1`, [req.params.id], (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
@@ -417,262 +407,33 @@ User.SpecificUser = (req, res) => {
 			res.json({
 				message: "User Details",
 				status: true,
+				followers: followers.rows[0].followers,
+				followings: followings.rows[0].followings,
+				Total_Ratings: ratings.rows[0].totalratings,
+				avgRatings: finalAvg,
 				result: result.rows
 			});
 		}
 	});
 }
 
-// User.resetPassword = async function (req, res) {
-// 	const { email, password, newPassword } = req.body;
-// 	// const hashPassword = await bcrypt.hash(newPassword, salt);
-// 	// const oldpassword = await bcrypt.hash(password, salt);
-// 	sql.query(`SELECT * FROM "user" WHERE email = $1`, [email], async (err, results) => {
-// 		if (err) {
-// 			console.log(err);
-// 			res.json({
-// 				message: "Try Again",
-// 				status: false,
-// 				err
-// 			});
-// 		}
-// 		else {
-// 			if (results.rows.length == 0) {
-// 				res.json({
-// 					message: "User Not Found",
-// 					status: false,
-// 				});
-// 			} else {
-// 				if (bcrypt.compareSync(req.body.password, results.rows[0].password)) {
-// 					const salt = await bcrypt.genSalt(10);
-// 					const hashPassword = await bcrypt.hash(newPassword, salt);
-// 					sql.query(`UPDATE "user" SET password = $1 WHERE id = $2`, [hashPassword, results.rows[0].id], (err, result) => {
-// 						if (err) {
-// 							console.log(err);
-// 							res.json({
-// 								message: "Try Again",
-// 								status: false,
-// 								err
-// 							});
-// 						}
-// 						else {
-// 							res.json({
-// 								message: "Password Changed Successfully",
-// 								status: true,
-// 								results: results.rows
-// 							});
-// 						}
-// 					})
-// 				}
-// 				else {
-// 					res.json({
-// 						message: "Incorrect Password",
-// 						status: false,
-// 					});
-// 				}
+User.AllUsers = async (req, res) => {
+	sql.query(`SELECT *  FROM "user"`, (err, result) => {
+		if (err) {
+			console.log(err);
+			res.json({
+				message: "Try Again",
+				status: false,
+				err
+			});
+		} else {
+			res.json({
+				message: "All User Details",
+				status: true,
+				result: result.rows
+			});
+		}
+	});
+}
 
-// 			}
-// 		}
-// 	});
-
-// }
-// User.todaysAddedUsers = (req, res) => {
-// 	sql.query(`SELECT MONTH('createdat')  FROM user`, (err, result) => {
-// 		if (err) {
-// 			console.error(err);
-// 			res.json({
-// 				message: "Try Again",
-// 				status: false,
-// 				err
-// 			});
-// 		} else {
-// 			res.json({
-// 				message: "User Details",
-// 				status: true,
-// 				result: result.rows
-// 			});
-// 		}
-// 	});
-// }
-
-
-
-// User.TotalUsers = (req, res) => {
-// 	sql.query(`SELECT  COUNT(*) FROM "user" Where status = 'unblock' `, (err, result) => {
-// 		if (err) {
-// 			res.json({
-// 				message: "Try Again",
-// 				status: false,
-// 				err
-// 			});
-// 		} else {
-// 			res.json({
-// 				message: "User Details",
-// 				status: true,
-// 				result: result.rows
-// 			});
-// 		}
-// 	});
-// }
-
-// User.AllUsers = (req, res) => {
-// 	sql.query(`SELECT * FROM "user" Where status = 'unblock'`, (err, result) => {
-// 		if (err) {
-// 			res.json({
-// 				message: "Try Again",
-// 				status: false,
-// 				err
-// 			});
-// 		} else {
-// 			res.json({
-// 				message: "User Details",
-// 				status: true,
-// 				result: result.rows
-// 			});
-// 		}
-// 	});
-// }
-
-
-
-// User.BlockUserCount = (req, res) => {
-// 	sql.query(`SELECT  COUNT(*) FROM "user" Where status = 'block'`, (err, result) => {
-// 		if (err) {
-// 			res.json({
-// 				message: "Try Again",
-// 				status: false,
-// 				err
-// 			});
-// 		} else {
-// 			res.json({
-// 				message: "User Details",
-// 				status: true,
-// 				result: result.rows
-// 			});
-// 		}
-// 	});
-// }
-
-// User.BlockUsers = (req, res) => {
-// 	sql.query(`SELECT * FROM "user" where status = 'block' `, (err, result) => {
-// 		if (err) {
-// 			console.log(err);
-// 			res.json({
-// 				message: "Try Again",
-// 				status: false,
-// 				err
-// 			});
-// 		} else {
-// 			res.json({
-// 				message: "User Details",
-// 				status: true,
-// 				result: result.rows
-// 			});
-// 		}
-// 	});
-// }
-
-
-// User.SubscribedUserCount = (req, res) => {
-// 	sql.query(`SELECT  COUNT(*) FROM "user" Where type = 'subscribed'`, (err, result) => {
-// 		if (err) {
-// 			res.json({
-// 				message: "Try Again",
-// 				status: false,
-// 				err
-// 			});
-// 		} else {
-// 			res.json({
-// 				message: "User Details",
-// 				status: true,
-// 				result: result.rows
-// 			});
-// 		}
-// 	});
-// }
-
-// User.SubscribedUsers = (req, res) => {
-// 	sql.query(`SELECT * FROM "user" where type = 'subscribed' `, (err, result) => {
-// 		if (err) {
-// 			res.json({
-// 				message: "Try Again",
-// 				status: false,
-// 				err
-// 			});
-// 		} else {
-// 			res.json({
-// 				message: "User Details",
-// 				status: true,
-// 				result: result.rows
-// 			});
-// 		}
-// 	});
-// }
-
-
-
-
-
-// User.newPassword = async (req, res) => {
-// 	try {
-// 		const email = req.body.email;
-// 		const found_email_query = 'SELECT * FROM otp WHERE email = $1 AND status = $2'
-// 		const result = await sql.query(found_email_query, [email, 'verified'])
-// 		if (result.rowCount > 0) {
-// 			const salt = await bcrypt.genSalt(10);
-// 			let hashpassword = await bcrypt.hash(req.body.password, salt);
-// 			let query = `UPDATE "user" SET password = $1  WHERE email = $2 RETURNING*`
-// 			let values = [hashpassword, email]
-// 			let updateResult = await sql.query(query, values);
-// 			updateResult = updateResult.rows[0];
-// 			console.log(result.rows);
-// 			sql.query(`DELETE FROM otp WHERE id = $1;`, [result.rows[0].id], (err, result) => { });
-// 			res.json({
-// 				message: "Password changed",
-// 				status: true,
-// 				result: updateResult
-// 			})
-// 		}
-// 		else {
-// 			res.json({
-// 				message: "Email Not Found ",
-// 				status: false
-// 			})
-// 		}
-// 	}
-// 	catch (err) {
-// 		console.log(err)
-// 		res.status(500).json({
-// 			message: `Internal server error occurred`,
-// 			success: false,
-// 		});
-// 	}
-// }
-
-// User.DeleteUser = async (req, res) => {
-// 	const data = await sql.query(`select * from "user" where id = ${req.params.id}`);
-// 	if (data.rows.length === 1) {
-// 		sql.query(`DELETE FROM "user" WHERE id = ${req.params.id};`, (err, result) => {
-// 			if (err) {
-// 				res.json({
-// 					message: "Try Again",
-// 					status: false,
-// 					err
-// 				});
-// 			} else {
-// 				res.json({
-// 					message: "User Deleted Successfully!",
-// 					status: true,
-// 					result: data.rows,
-
-// 				});
-// 			}
-// 		});
-// 	} else {
-// 		res.json({
-// 			message: "Not Found",
-// 			status: false,
-// 		});
-// 	}
-// }
 module.exports = User;

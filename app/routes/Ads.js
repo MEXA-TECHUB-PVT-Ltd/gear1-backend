@@ -15,6 +15,7 @@ module.exports = app => {
     router.post("/get_ads_by_screen", Ads.GetByScreen);
     router.put("/update_ad", Ads.Update);
     router.put("/update_status", Ads.UpdateStatus);
+    router.post("/get_active_ads_by_screen", Ads.GetActiveByScreen);
 
 
     app.use("/ads", router);
