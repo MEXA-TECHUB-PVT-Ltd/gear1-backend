@@ -18,6 +18,7 @@ module.exports = app => {
     router.post("/verifyOTP", admin.verifyOTP)
     router.post("/newPassword", admin.newPassword)
     router.post("/google_sign_in", admin.GooglesignIn);
+    router.post("/get_admin_by_id", admin.GetAdminByID);
 
 
     app.use('/admin', router);

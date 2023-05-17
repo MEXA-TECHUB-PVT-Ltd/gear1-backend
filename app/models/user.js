@@ -418,6 +418,7 @@ User.SpecificUser = async (req, res) => {
 }
 
 User.AllUsers = async (req, res) => {
+	const userData = await sql.query(`select COUNT(*) as count from "user"`);
 	sql.query(`SELECT *  FROM "user"`, (err, result) => {
 		if (err) {
 			console.log(err);
@@ -430,6 +431,7 @@ User.AllUsers = async (req, res) => {
 			res.json({
 				message: "All User Details",
 				status: true,
+				count:userData.rows[0].count,
 				result: result.rows
 			});
 		}

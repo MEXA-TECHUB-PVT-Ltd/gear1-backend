@@ -11,25 +11,12 @@ const sql = new Pool({
   password: "1234",
   database: "gear1",
   max: 5,
-
-  //   host : https://postgres-staging-projects.mtechub.com
-  // port : 5432
-  // username : gearoneuser
-  // db : gearone
-  // passoword : mtechub
-
-  // host: 'https://postgres-staging-projects.mtechub.com/',
-  // port: 5432,
-  // username: "gearoneuser",
-  // passoword: 'mtechub',
-  // userdb: 'gearone',
-  // max: 10
-
-  // host: 'postgres-node-staging-projects.mtechub.com',
-  // port: 5432,
-  // user: 'bitlyuser',
-  // password: 'mtechub123',
-  // database: 'bitly',
+  // host:'postgres-staging-projects.mtechub.com', 
+  // port :5432 ,
+  // user :'gearoneuser' ,
+  // password :'mtechub123123',
+  // database :  'gearone',
+  // max : 10
 });
 
 

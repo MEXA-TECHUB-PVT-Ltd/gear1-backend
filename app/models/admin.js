@@ -122,7 +122,9 @@ admin.login = async function (req, res) {
 	});
 }
 
-admin.GetAllUser = (req, res) => {
+admin.GetAllUser = async (req, res) => {
+	const userData = await sql.query(`select COUNT(*) as count from "user"`);
+
 	sql.query(`SELECT * FROM "user"`, (err, result) => {
 		if (err) {
 			console.log(err);
@@ -135,6 +137,7 @@ admin.GetAllUser = (req, res) => {
 			res.json({
 				message: "admin Details",
 				status: true,
+				count:userData.rows[0].count,
 				result: result.rows
 			});
 		}
@@ -222,6 +225,25 @@ admin.GetUserByID = (req, res) => {
 			});
 		} else {
 			res.json({
+				message: "User Details",
+				status: true,
+				result: result.rows
+			});
+		}
+	});
+}
+
+admin.GetAdminByID = (req, res) => {
+	sql.query(`SELECT * FROM "admin" WHERE  id = $1`, [req.params.id], (err, result) => {
+		if (err) {
+			console.log(err);
+			res.json({
+				message: "Try Again",
+				status: false,
+				err
+			});
+		} else {
+			res.json({
 				message: "admin Details",
 				status: true,
 				result: result.rows
@@ -229,6 +251,7 @@ admin.GetUserByID = (req, res) => {
 		}
 	});
 }
+
 
 admin.resetPassword = async function (req, res) {
 	const { email, password, newPassword } = req.body;
