@@ -167,11 +167,12 @@ Merchandise.GetMerchandise = (req, res) => {
 }
 
 
-Merchandise.GetAllMerchandise = (req, res) => {
+Merchandise.GetAllMerchandise = async (req, res) => {
+	const data = await sql.query(`SELECT COUNT(*) AS count FROM "merchandise"`);
 	sql.query(`SELECT "merchandise".* , "categories".name AS Catagory_name, "locations".location_name 
 	FROM "merchandise" JOIN "categories" 
    ON  CAST( "merchandise".category_id AS INT) = "categories".id 
-   JOIN "locations" ON "merchandise".location_id = "locations".id `
+   JOIN "locations" ON "merchandise".location_id = "locations".id ORDER BY "createdat" DESC`
 		, (err, result) => {
 			if (err) {
 				console.log(err);
@@ -181,9 +182,12 @@ Merchandise.GetAllMerchandise = (req, res) => {
 					err
 				});
 			} else {
+
+				console.log(result.rows);
 				res.json({
 					message: "All Merchandise list",
 					status: true,
+					count:data.rows[0].count,
 					result: result.rows,
 				});
 			}

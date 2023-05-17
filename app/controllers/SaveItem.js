@@ -20,6 +20,16 @@ exports.UnSaveItem = (req, res) => {
   SaveItem.UnSaveItem( req, res);
 };
 
+exports.CheckItem = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  SaveItem.CheckItem( req, res);
+};
+
 exports.ViewSaveItem = (req, res) => {
   if (!req.body) {
     res.json({

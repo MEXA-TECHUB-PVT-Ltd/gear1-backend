@@ -20,6 +20,17 @@ exports.signIn = (req, res) => {
   }  
   user.login( req, res);
 };
+
+exports.AllUsers = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  user.AllUsers( req, res);
+};
+
 exports.GooglesignIn = (req, res) => {
   if (!req.body) {
     res.json({
@@ -132,15 +143,6 @@ exports.verifyOTP = (req, res) => {
   otp.verifyOTP( req, res);
 };
 
-exports.AllUsers = (req, res) => {
-	if (!req.body) {
-	  res.json({
-		message: "Content can not be empty!",
-		status: false,
-	   });
-	}  
-	user.AllUsers( req, res);
-  };
 
   exports.SpecificUser = (req, res) => {
 	if (!req.body) {

@@ -28,6 +28,15 @@ exports.UpdateStatus = (req, res) => {
   }  
   Ads.UpdateStatus( req, res);
 };
+exports.GetActiveByScreen = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Ads.GetActiveByScreen( req, res);
+};
 
 exports.addImage = (req, res) => {
   if (!req.body) {

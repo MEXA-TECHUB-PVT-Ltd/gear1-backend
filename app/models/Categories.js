@@ -137,13 +137,15 @@ Categories.GetAllCategories = async (req, res) => {
 				err
 			});
 		} else {
-			result.rows.push({
-				count:
-					data.rows[0].count
-			});
+			// result.rows.push({
+			// 	count:
+			// 		data.rows[0].count
+			// });
 			res.json({
 				message: "All categories Details",
 				status: true,
+				count:
+					data.rows[0].count,
 				result: result.rows,
 			});
 		}

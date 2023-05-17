@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
         updatedAt timestamp ,
         PRIMARY KEY (id));
 
+
 CREATE TABLE IF NOT EXISTS public.items (
         id SERIAL NOT NULL,
         userid SERIAL NOT NULL,
@@ -79,12 +80,14 @@ CREATE TABLE IF NOT EXISTS public.items (
         price text,
         category_id text,
         description text,
-        likes text,
-        shares text,
+        location text,
+        promoted text,
+        start_date timestamp,
+        end_date timestamp,
+        added_by text,
         createdAt timestamp NOT NULL,
-        updatedAt timestamp ,
+        updatedAt timestamp,
         PRIMARY KEY (id));
-
 
 CREATE TABLE IF NOT EXISTS public.saveitems (
         id SERIAL,

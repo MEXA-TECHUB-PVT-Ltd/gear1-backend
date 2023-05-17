@@ -132,7 +132,7 @@ ads.UpdateStatus = async (req, res) => {
 			}
 
 			sql.query(`UPDATE "ads" SET active_status = $1 WHERE id = $2;`,
-				[ active_status, adID], async (err, result) => {
+				[active_status, adID], async (err, result) => {
 					if (err) {
 						console.log(err);
 						res.json({
@@ -215,9 +215,38 @@ ads.GetAll = async (req, res) => {
 
 ads.GetByScreen = async (req, res) => {
 
-	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "ads"`)
+	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "ads" where screen_id = $1 `,
+		[req.body.screen_id])
 	sql.query(`SELECT *  FROM "ads" where screen_id = $1 `,
-	[req.body.screen_id], (err, result) => {
+		[req.body.screen_id], (err, result) => {
+			if (err) {
+				console.log(err);
+				res.json({
+					message: "Try Again",
+					status: false,
+					err
+				});
+			} else {
+				// result.rows.push({
+				// 	allads:
+				// 		data.rows[0].allads
+				// });
+				res.json({
+					message: "Ad's Data by Screen",
+					status: true,
+					allads_Screen: data.rows[0].allads,
+					result: result.rows,
+				});
+			}
+		});
+
+}
+
+ads.GetActiveByScreen = async (req, res) => {
+	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "ads" 
+	WHERE screen_id = $1 AND active_status = $2`, [req.body.screen_id, 'active'])
+	sql.query(`SELECT *  FROM "ads" WHERE screen_id = $1 AND active_status = $2`
+		, [req.body.screen_id, 'active'], (err, result) => {
 			if (err) {
 				console.log(err);
 				res.json({
@@ -227,18 +256,19 @@ ads.GetByScreen = async (req, res) => {
 				});
 			} else {
 				result.rows.push({
-					allads:
-						data.rows[0].allads
-				});	
+
+				});
 				res.json({
-					message: "Ad's Data by Screen",
+					message: "Active Ad's Data by Screen",
 					status: true,
+					Active_ads: data.rows[0].allads,
 					result: result.rows,
 				});
 			}
 		});
 
 }
+
 
 ads.Update = async (req, res) => {
 	if (req.body.adID === '') {
