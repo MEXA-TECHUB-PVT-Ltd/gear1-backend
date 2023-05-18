@@ -9,13 +9,19 @@ const Orders = function (Orders) {
 };
 
 Orders.Add = async (req, res) => {
+	const user = await sql.query(`select * from "user" WHERE id = $1`
+		, [req.body.user_id])
+	const merchandise = await sql.query(`select * from merchandise WHERE id = $1`
+		, [req.body.merchandise_id])
+
 	if (!req.body.user_id || req.body.user_id === '') {
 		res.json({
 			message: "Please Enter user_id",
 			status: false,
 		});
-	} else {
-		sql.query(`CREATE TABLE IF NOT EXISTS public.orders (
+	} else if (merchandise.rowCount > 0) {
+		if (user.rowCount > 0) {
+			sql.query(`CREATE TABLE IF NOT EXISTS public.orders (
         id SERIAL NOT NULL,
         user_id SERIAL NOT NULL,
         merchandise_id SERIAL NOT NULL,
@@ -24,37 +30,49 @@ Orders.Add = async (req, res) => {
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id))  ` , (err, result) => {
-			if (err) {
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				sql.query(`INSERT INTO orders (id, user_id , merchandise_id,ordered_at,status, createdAt ,updatedAt )
+				if (err) {
+					res.json({
+						message: "Try Again",
+						status: false,
+						err
+					});
+				} else {
+					sql.query(`INSERT INTO orders (id, user_id , merchandise_id,ordered_at,status, createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3, $4,  'NOW()', 'NOW()') RETURNING * `
-					, [req.body.user_id, req.body.merchandise_id, req.body.ordered_at,
-					req.body.status], (err, result) => {
-						if (err) {
+						, [req.body.user_id, req.body.merchandise_id, req.body.ordered_at,
+						req.body.status], (err, result) => {
+							if (err) {
 
-							res.json({
-								message: "Try Again",
-								status: false,
-								err
-							});
-						}
-						else {
-							res.json({
-								message: "Order added Successfully!",
-								status: true,
-								result: result.rows,
-							});
-						}
+								res.json({
+									message: "Try Again",
+									status: false,
+									err
+								});
+							}
+							else {
+								res.json({
+									message: "Order added Successfully!",
+									status: true,
+									result: result.rows,
+								});
+							}
 
-					})
+						})
 
-			};
+				};
+			});
+		} else {
+			res.json({
+				message: "Entered User ID is not present",
+				status: false,
+			});
+		}
+	} else {
+		res.json({
+			message: "Entered merchandise ID is not present",
+			status: false,
 		});
+
 	}
 }
 
@@ -168,7 +186,7 @@ Orders.GetUserOrders_ByStatus = (req, res) => {
 	 "merchandise".description AS Merchandise_description
 	FROM "orders" JOIN "user" ON "orders".user_id = "user".id
 	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".user_id = $1 AND "orders".status = $2`
-		, [req.body.user_id , req.body.status], (err, result) => {
+		, [req.body.user_id, req.body.status], (err, result) => {
 			if (err) {
 				console.log(err);
 				res.json({
@@ -212,7 +230,7 @@ Orders.changeOrderStatus = async (req, res) => {
 				status = oldStatus;
 			}
 			sql.query(`UPDATE "orders" SET status = $1 WHERE id = $2;`,
-				[ status, Order_ID], async (err, result) => {
+				[status, Order_ID], async (err, result) => {
 					if (err) {
 						console.log(err);
 						res.json({

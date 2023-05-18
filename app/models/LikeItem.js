@@ -16,9 +16,9 @@ async function sendNotificationToUser(user_id, message) {
 		const user = await sql.query(`SELECT * FROM "user" 
 		 where id = $1 
 		  `, [user_id]);
-		  if (user.rows.length > 0) {
+		if (user.rows.length > 0) {
 			deviceToken = user.rows[0].devicetoken;
-		  }
+		}
 
 		// const result = await userModel.findOne({ id: user_id });
 		// if (result) {
@@ -62,6 +62,11 @@ async function sendNotificationToUser(user_id, message) {
 
 
 LikeItem.LikeItem = async (req, res) => {
+	const user = await sql.query(`select * from "user" WHERE id = $1`
+		, [req.body.user_ID])
+	const merchandise = await sql.query(`select * from "items" WHERE id = $1`
+		, [req.body.item_ID])
+
 	if (!req.body.item_ID || req.body.item_ID === '') {
 		res.json({
 			message: "Please Enter item_ID",
@@ -72,7 +77,8 @@ LikeItem.LikeItem = async (req, res) => {
 			message: "Please Enter user_ID",
 			status: false,
 		});
-	} else {
+	} else if (merchandise.rowCount > 0) {
+		if (user.rowCount > 0) {
 		sql.query(`CREATE TABLE IF NOT EXISTS public.likeitems (
         id SERIAL,
         item_id SERIAL NOT NULL,
@@ -121,7 +127,7 @@ LikeItem.LikeItem = async (req, res) => {
 							const data = await sql.query(`INSERT INTO  "notifications"
 							 (id, user_id, notification_from , notification_message , createdAt ,updatedAt)
 							 VALUES (DEFAULT, $1, $2, $3, 'NOW()', 'NOW()') 
-							  `, [ItemUser.rows[0].id , req.body.user_ID, `${user.rows[0].username} Likes your Item (${item.rows[0].name}) `]);
+							  `, [ItemUser.rows[0].id, req.body.user_ID, `${user.rows[0].username} Likes your Item (${item.rows[0].name}) `]);
 							if (data.rows.length > 1) {
 								res.json({
 									message: "item Liked Successfully!",
@@ -150,6 +156,17 @@ LikeItem.LikeItem = async (req, res) => {
 
 			};
 		});
+	} else {
+		res.json({
+			message: "Entered User ID is not present",
+			status: false,
+		});
+	}
+} else {
+	res.json({
+		message: "Entered Item ID is not present",
+		status: false,
+	});
 	}
 }
 
@@ -202,7 +219,7 @@ LikeItem.ViewLikeItem = async (req, res) => {
 			res.json({
 				message: "item Details",
 				status: true,
-				AllLikes : data.rows[0].count,
+				AllLikes: data.rows[0].count,
 				result: result.rows,
 			});
 		}
@@ -212,7 +229,7 @@ LikeItem.ViewLikeItem = async (req, res) => {
 
 LikeItem.ViewItemLikes = async (req, res) => {
 	sql.query(`select COUNT(*) AS count from "likeitems" where item_id = $1 
-	`,[req.body.item_ID] ,(err, result) => {
+	`, [req.body.item_ID], (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
@@ -224,7 +241,7 @@ LikeItem.ViewItemLikes = async (req, res) => {
 			res.json({
 				message: "item likes",
 				status: true,
-				AllLikes : result.rows,
+				AllLikes: result.rows,
 			});
 		}
 	});

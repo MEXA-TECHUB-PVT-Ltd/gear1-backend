@@ -1,4 +1,4 @@
-const {sql} = require("../config/db.config");
+const { sql } = require("../config/db.config");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -8,6 +8,11 @@ const ShareItem = function (ShareItem) {
 };
 
 ShareItem.ShareItem = async (req, res) => {
+	const user = await sql.query(`select * from "user" WHERE id = $1`
+		, [req.body.user_ID])
+	const merchandise = await sql.query(`select * from items WHERE id = $1`
+		, [req.body.item_ID])
+
 	if (!req.body.item_ID || req.body.item_ID === '') {
 		res.json({
 			message: "Please Enter item_ID",
@@ -18,42 +23,54 @@ ShareItem.ShareItem = async (req, res) => {
 			message: "Please Enter user_ID",
 			status: false,
 		});
-	} else {
-		sql.query(`CREATE TABLE IF NOT EXISTS public.shareitems (
+	} else if (merchandise.rowCount > 0) {
+		if (user.rowCount > 0) {
+			sql.query(`CREATE TABLE IF NOT EXISTS public.shareitems (
         id SERIAL,
         item_id SERIAL NOT NULL,
         user_id SERIAL NOT NULL,
         createdAt timestamp,
         updatedAt timestamp ,
         PRIMARY KEY (id));  ` , (err, result) => {
-			if (err) {
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				sql.query(`INSERT INTO shareitems (id, item_id , user_id, createdAt ,updatedAt )
+				if (err) {
+					res.json({
+						message: "Try Again",
+						status: false,
+						err
+					});
+				} else {
+					sql.query(`INSERT INTO shareitems (id, item_id , user_id, createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, 'NOW()', 'NOW()') 
-							RETURNING * `,[req.body.item_ID, req.body.user_ID], (err, result) => {
-					if (err) {
-						res.json({
-							message: "Try Again",
-							status: false,
-							err
-						});
-					}
-					else {
-						res.json({
-							message: "item share's Successfully!",
-							status: true,
-							result: result.rows,
-						});
-					}
+							RETURNING * `, [req.body.item_ID, req.body.user_ID], (err, result) => {
+						if (err) {
+							res.json({
+								message: "Try Again",
+								status: false,
+								err
+							});
+						}
+						else {
+							res.json({
+								message: "item share's Successfully!",
+								status: true,
+								result: result.rows,
+							});
+						}
 
-				})
+					})
 
-			};
+				};
+			});
+		} else {
+			res.json({
+				message: "Entered User ID is not present",
+				status: false,
+			});
+		}
+	} else {
+		res.json({
+			message: "Entered Item ID is not present",
+			status: false,
 		});
 	}
 }
@@ -62,7 +79,7 @@ ShareItem.UnShareItem = async (req, res) => {
 	const data = await sql.query(`select * from shareitems where item_id = ${req.body.item_ID} 
 	AND user_id = ${req.body.user_ID} `);
 	if (data.rows.length === 1) {
-		sql.query(`DELETE FROM shareitems WHERE item_id = $1 AND user_id = $2 ;`,[req.body.item_ID, req.body.user_ID], (err, result) => {
+		sql.query(`DELETE FROM shareitems WHERE item_id = $1 AND user_id = $2 ;`, [req.body.item_ID, req.body.user_ID], (err, result) => {
 			if (err) {
 				res.json({
 					message: "Try Again",
@@ -92,7 +109,7 @@ ShareItem.ViewShareItem = (req, res) => {
 	 AS Cover_Image ,"user".status ,
 	"items".* FROM "saveitems" JOIN "user" 
 	ON "saveitems".user_id = "user".id JOIN "items" ON  "items".id 
-	= "saveitems".item_id where user_id = $1;`,[req.body.user_ID], (err, result) => {
+	= "saveitems".item_id where user_id = $1;`, [req.body.user_ID], (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
