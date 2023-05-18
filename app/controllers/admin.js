@@ -28,7 +28,7 @@ exports.GetAdminByID = (req, res) => {
       status: false,
      });
   }  
-  otp.GetAdminByID( req, res);
+  admin.GetAdminByID( req, res);
 };
 
 exports.verifyOTPSignIn = (req, res) => {

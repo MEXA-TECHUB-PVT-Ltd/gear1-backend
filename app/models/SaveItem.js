@@ -8,6 +8,11 @@ const SaveItem = function (SaveItem) {
 };
 
 SaveItem.SaveItem = async (req, res) => {
+	const user = await sql.query(`select * from "user" WHERE id = $1`
+	, [req.body.user_ID])
+const merchandise = await sql.query(`select * from items WHERE id = $1`
+	, [req.body.item_ID])
+
 	if (!req.body.item_ID || req.body.item_ID === '') {
 		res.json({
 			message: "Please Enter item_ID",
@@ -18,7 +23,8 @@ SaveItem.SaveItem = async (req, res) => {
 			message: "Please Enter user_ID",
 			status: false,
 		});
-	} else {
+	} else if (merchandise.rowCount > 0) {
+		if (user.rowCount > 0) {
 		sql.query(`CREATE TABLE IF NOT EXISTS public.saveitems (
         id SERIAL,
         item_id SERIAL NOT NULL,
@@ -55,6 +61,17 @@ SaveItem.SaveItem = async (req, res) => {
 
 			};
 		});
+	} else {
+		res.json({
+			message: "Entered User ID is not present",
+			status: false,
+		});
+	}
+} else {
+	res.json({
+		message: "Entered Item ID is not present",
+		status: false,
+	});
 	}
 }
 

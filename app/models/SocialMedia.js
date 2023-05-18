@@ -10,12 +10,14 @@ const SocialMedia = function (SocialMedia) {
 };
 
 SocialMedia.Add = async (req, res) => {
+	const user = await sql.query(`select * from "user" WHERE id = $1`
+		, [req.body.user_ID])
 	if (!req.body.userID || req.body.userID === '') {
 		res.json({
 			message: "Please Enter userID",
 			status: false,
 		});
-	} else {
+	} else if (user.rowCount > 0) {
 		sql.query(`CREATE TABLE IF NOT EXISTS public.socialmedia (
         id SERIAL NOT NULL,
         userid SERIAL NOT NULL,
@@ -57,7 +59,13 @@ SocialMedia.Add = async (req, res) => {
 
 			};
 		});
+	} else {
+		res.json({
+			message: "Entered User ID is not present",
+			status: false,
+		});
 	}
+
 }
 SocialMedia.Get = (req, res) => {
 	sql.query(`SELECT * FROM "socialmedia" WHERE id = $1 AND userid = $2`
@@ -89,7 +97,7 @@ SocialMedia.Update = async (req, res) => {
 		});
 	} else {
 		const userData = await sql.query(`select * from "socialmedia" where id = $1 
-		AND userid = $2`, [req.body.SocialMediaID,req.body.userID]);
+		AND userid = $2`, [req.body.SocialMediaID, req.body.userID]);
 
 		if (userData.rowCount === 1) {
 
