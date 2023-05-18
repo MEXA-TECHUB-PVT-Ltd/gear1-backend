@@ -8,12 +8,14 @@ const ads = function (ads) {
 
 };
 ads.Add = async (req, res) => {
+	const user = await sql.query(`select * from "screens" WHERE id = $1`
+		, [req.body.screen_id])
 	if (!req.body.screen_id || req.body.screen_id === '') {
 		res.json({
 			message: "Please Enter screen ID",
 			status: false,
 		});
-	} else {
+	} else if (user.rowCount > 0) {
 		sql.query(`CREATE TABLE IF NOT EXISTS public.ads (
         id SERIAL NOT NULL,
         image text,
@@ -52,6 +54,11 @@ ads.Add = async (req, res) => {
 					})
 
 			};
+		});
+	} else {
+		res.json({
+			message: "Entered Screen ID is not present",
+			status: false,
 		});
 	}
 }

@@ -1,6 +1,5 @@
 const express = require("express");
 // const fileupload = require("express-fileupload");
-const schedule = require('node-schedule');
 
 // const bodyParser = require("body-parser"); /* deprecated */
 const cors = require("cors");
@@ -9,8 +8,8 @@ const bodyParser = require("body-parser"); /* deprecated */
 const app = express();
 const dbConfig = require('./app/config/db.config')
 require('dotenv').config()
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
+// var server = require('http').Server(app);
+// var io = require('socket.io')(server);
 var corsOptions = {
   // origin: "http://localhost:8081"
 };
@@ -28,25 +27,13 @@ app.use(express.static("files"));
 app.use(express.urlencoded({ extended: true }));   /* bodyParser.urlencoded() is deprecated */
 app.use("/images_uploads", express.static("images_uploads"))
 
-server.listen(80);
-io.on('connection', function (socket) {
-  console.log(socket);
-  socket.emit('pushNotification', { success: true, msg: 'hello' });
-
-});
+// server.listen(80);
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true })); /* bodyParser.urlencoded() is deprecated */
 
 app.get("/", (req, res) => {
-
-  io.on('connection', function (socket) {
-    console.log(socket);
-    socket.emit('pushNotification', { success: true, msg: 'hello' });
-
-  });
   res.json({ message: "Welcome to Gear 1" });
-
 });
 
 require("./app/routes/admin")(app);
