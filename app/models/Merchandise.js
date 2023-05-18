@@ -12,15 +12,24 @@ const Merchandise = function (Merchandise) {
 };
 
 Merchandise.Add = async (req, res) => {
+	const user = await sql.query(`select * from "admin" WHERE id = $1`
+		, [req.body.adminID])
+	const merchandise = await sql.query(`select * from categories WHERE id = $1`
+		, [req.body.category_id])
+	const location = await sql.query(`select * from locations WHERE id = $1`
+		, [req.body.location_id])
+
 	if (!req.body.adminID || req.body.adminID === '') {
 		res.json({
 			message: "Please Enter user-ID",
 			status: false,
 		});
-	} else {
-		// location INTEGER,
-		// shares INTEGER,	
-		sql.query(`CREATE TABLE IF NOT EXISTS public.merchandise (
+	} else if (merchandise.rowCount > 0) {
+		if (user.rowCount > 0) {
+			if (location.rowCount > 0) {
+				// location INTEGER,
+				// shares INTEGER,	
+				sql.query(`CREATE TABLE IF NOT EXISTS public.merchandise (
         id SERIAL NOT NULL,
         adminID SERIAL NOT NULL,
         images TEXT[],
@@ -32,37 +41,56 @@ Merchandise.Add = async (req, res) => {
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));` , (err, result) => {
-			if (err) {
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
+					if (err) {
+						res.json({
+							message: "Try Again",
+							status: false,
+							err
+						});
+					} else {
+						sql.query(`INSERT INTO merchandise (id, adminID ,images, name,price,category_id,description,location_id , createdAt ,updatedAt )
+                            VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6, $7 , 'NOW()', 'NOW()') RETURNING * `
+							, [req.body.adminID, [], req.body.name, req.body.price,
+							req.body.category_id, req.body.description, req.body.location_id], (err, result) => {
+								if (err) {
+									console.log(err);
+									res.json({
+										message: "Try Again",
+										status: false,
+										err
+									});
+								}
+								else {
+									res.json({
+										message: "Merchandise added Successfully!",
+										status: true,
+										result: result.rows,
+									});
+								}
+
+							})
+
+					};
 				});
 			} else {
-				sql.query(`INSERT INTO merchandise (id, adminID ,images, name,price,category_id,description,location_id , createdAt ,updatedAt )
-                            VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6, $7 , 'NOW()', 'NOW()') RETURNING * `
-					, [req.body.adminID, [], req.body.name, req.body.price,
-					req.body.category_id, req.body.description, req.body.location_id], (err, result) => {
-						if (err) {
-							console.log(err);
-							res.json({
-								message: "Try Again",
-								status: false,
-								err
-							});
-						}
-						else {
-							res.json({
-								message: "Merchandise added Successfully!",
-								status: true,
-								result: result.rows,
-							});
-						}
+				res.json({
+					message: "Entered location ID is not present",
+					status: false,
+				});
+			}
 
-					})
-
-			};
+		} else {
+			res.json({
+				message: "Entered Admin ID is not present",
+				status: false,
+			});
+		}
+	} else {
+		res.json({
+			message: "Entered Catagory ID is not present",
+			status: false,
 		});
+
 	}
 }
 
@@ -81,7 +109,7 @@ Merchandise.addImages = async (req, res) => {
 			console.log(photo.length);
 			if (photo.length < 5) {
 				if (req.files.length < 6) {
-					if(photo.length + 1 + req.files.length <= 5 ){
+					if (photo.length + 1 + req.files.length <= 5) {
 						let { id } = req.body;
 						if (req.files) {
 							req.files.forEach(function (file) {
@@ -113,7 +141,7 @@ Merchandise.addImages = async (req, res) => {
 									}
 								}
 							});
-					}else{
+					} else {
 						res.json({
 							message: "Max 5 images allowed (Selected images will exceed this limit)",
 							status: false,
@@ -126,7 +154,7 @@ Merchandise.addImages = async (req, res) => {
 						status: false,
 					});
 				}
-			}else{
+			} else {
 				res.json({
 					message: "No More images allowed",
 					status: false,
@@ -187,7 +215,7 @@ Merchandise.GetAllMerchandise = async (req, res) => {
 				res.json({
 					message: "All Merchandise list",
 					status: true,
-					count:data.rows[0].count,
+					count: data.rows[0].count,
 					result: result.rows,
 				});
 			}

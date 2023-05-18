@@ -38,7 +38,7 @@ DailyDeals.Add = async (req, res) => {
 					, [req.body.description, req.body.title, req.body.ends_at,
 					req.body.status], (err, result) => {
 						if (err) {
-
+							console.log(err);
 							res.json({
 								message: "Try Again",
 								status: false,

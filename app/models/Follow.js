@@ -1,4 +1,4 @@
-const {sql} = require("../config/db.config");
+const { sql } = require("../config/db.config");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const axios = require('axios');
@@ -16,9 +16,9 @@ async function sendNotificationToUser(user_id, message) {
 		const user = await sql.query(`SELECT * FROM "user" 
 		 where id = $1 
 		  `, [user_id]);
-		  if (user.rows.length > 0) {
+		if (user.rows.length > 0) {
 			deviceToken = user.rows[0].devicetoken;
-		  }
+		}
 
 		// const result = await userModel.findOne({ id: user_id });
 		// if (result) {
@@ -62,6 +62,11 @@ async function sendNotificationToUser(user_id, message) {
 
 
 Follow.Follow = async (req, res) => {
+	const user = await sql.query(`select * from "user" WHERE id = $1`
+		, [req.body.user_ID])
+	const merchandise = await sql.query(`select * from "user" WHERE id = $1`
+		, [req.body.follow_by_user_ID])
+
 	if (!req.body.follow_by_user_ID || req.body.follow_by_user_ID === '') {
 		res.json({
 			message: "Please Enter follow by User-ID",
@@ -72,76 +77,89 @@ Follow.Follow = async (req, res) => {
 			message: "Please Enter User-ID",
 			status: false,
 		});
-	} else {
-		sql.query(`CREATE TABLE IF NOT EXISTS public.followusers (
+	} else if (merchandise.rowCount > 0) {
+		if (user.rowCount > 0) {
+			sql.query(`CREATE TABLE IF NOT EXISTS public.followusers (
         id SERIAL,
         follow_by_user_id SERIAL NOT NULL,
         user_id SERIAL NOT NULL,
         createdAt timestamp,
         updatedAt timestamp ,
         PRIMARY KEY (id));  ` , (err, result) => {
-			if (err) {
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				sql.query(`INSERT INTO followusers (id, follow_by_user_id , user_id, createdAt ,updatedAt )
+				if (err) {
+					res.json({
+						message: "Try Again",
+						status: false,
+						err
+					});
+				} else {
+					sql.query(`INSERT INTO followusers (id, follow_by_user_id , user_id, createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2,'NOW()', 'NOW()') 
-							RETURNING * `,[req.body.follow_by_user_ID, req.body.user_ID], async (err, result) => {
-					if (err) {
-						res.json({
-							message: "Try Again",
-							status: false,
-							err
-						});
-					}
-					else {
-						const user = await sql.query(`SELECT  "user".username FROM "followusers" JOIN "user" 
+							RETURNING * `, [req.body.follow_by_user_ID, req.body.user_ID], async (err, result) => {
+						if (err) {
+							res.json({
+								message: "Try Again",
+								status: false,
+								err
+							});
+						}
+						else {
+							const user = await sql.query(`SELECT  "user".username FROM "followusers" JOIN "user" 
 						ON "followusers".follow_by_user_id = "user".id where "followusers".follow_by_user_id = $1 
 						  `, [req.body.follow_by_user_ID]);
-						if (user.rows.length > 1) {
-							console.log(user.rows[0].username);
+							if (user.rows.length > 1) {
+								console.log(user.rows[0].username);
 
 
-							sendNotificationToUser(req.body.user_ID, `${user.rows[0].username} Follows you`);
+								sendNotificationToUser(req.body.user_ID, `${user.rows[0].username} Follows you`);
 
 
 
-							const data = await sql.query(`INSERT INTO  "notifications"
+								const data = await sql.query(`INSERT INTO  "notifications"
 							 (id, user_id, notification_from , notification_message , createdAt ,updatedAt)
 							 VALUES (DEFAULT, $1  , $2,$3,'NOW()', 'NOW()') 
 							  `, [req.body.user_ID, req.body.follow_by_user_ID, `${user.rows[0].username} Follows you `]);
-							if (data.rows.length > 1) {
+								if (data.rows.length > 1) {
+									res.json({
+										message: "User Followed Successfully!",
+										status: true,
+										result: result.rows,
+									});
+								}
+								else {
+									res.json({
+										message: "User Followed Successfully!",
+										status: true,
+										result: result.rows,
+									});
+								}
+							} else {
 								res.json({
 									message: "User Followed Successfully!",
 									status: true,
 									result: result.rows,
 								});
 							}
-							else {
-								res.json({
-									message: "User Followed Successfully!",
-									status: true,
-									result: result.rows,
-								});
-							}
-						} else {
-							res.json({
-								message: "User Followed Successfully!",
-								status: true,
-								result: result.rows,
-							});
+
+
 						}
+					})
 
-
-					}
-				})
-
-			};
+				};
+			});
+		} else {
+			res.json({
+				message: "Entered User ID is not present",
+				status: false,
+			});
+		}
+	} else {
+		res.json({
+			message: "Entered Follow by User-ID is not present",
+			status: false,
 		});
 	}
+
 }
 
 Follow.GetFollowers = async (req, res) => {
@@ -153,23 +171,23 @@ Follow.GetFollowers = async (req, res) => {
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
 	 AS Cover_Image  FROM "followusers" JOIN "user" 
 	ON "followusers".follow_by_user_id = "user".id where "followusers".user_id = $1;`
-	,[req.body.user_ID], (err, result) => {
-		if (err) {
-			console.log(err);
-			res.json({
-				message: "Try Again",
-				status: false,
-				err
-			});
-		} else {
-			res.json({
-				message: "User's Followers List",
-				status: true,
-				totalFollowers: user.rows[0].count,
-				result: result.rows,
-			});
-		}
-	});
+		, [req.body.user_ID], (err, result) => {
+			if (err) {
+				console.log(err);
+				res.json({
+					message: "Try Again",
+					status: false,
+					err
+				});
+			} else {
+				res.json({
+					message: "User's Followers List",
+					status: true,
+					totalFollowers: user.rows[0].count,
+					result: result.rows,
+				});
+			}
+		});
 
 }
 
@@ -181,23 +199,23 @@ Follow.GetFollowings = async (req, res) => {
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
 	 AS Cover_Image FROM "followusers" JOIN "user" 
 	ON "followusers".user_id = "user".id where "followusers".follow_by_user_id = $1;`
-	,[req.body.user_ID], (err, result) => {
-		if (err) {
-			console.log(err);
-			res.json({
-				message: "Try Again",
-				status: false,
-				err
-			});
-		} else {
-			res.json({
-				message: "User's Following List",
-				status: true,	
-				totalFollowings: user.rows[0].count,
-				result: result.rows,
-			});
-		}
-	});
+		, [req.body.user_ID], (err, result) => {
+			if (err) {
+				console.log(err);
+				res.json({
+					message: "Try Again",
+					status: false,
+					err
+				});
+			} else {
+				res.json({
+					message: "User's Following List",
+					status: true,
+					totalFollowings: user.rows[0].count,
+					result: result.rows,
+				});
+			}
+		});
 
 }
 
@@ -216,7 +234,7 @@ Follow.CheckStatus = (req, res) => {
 				res.json({
 					message: "Current User is followed by that User",
 					status: true,
-					Followed : "true",
+					Followed: "true",
 					result: result.rows
 				});
 
@@ -224,7 +242,7 @@ Follow.CheckStatus = (req, res) => {
 				res.json({
 					message: "Current User Isn't followed by that User",
 					status: true,
-					Followed : "false",
+					Followed: "false",
 				});
 			}
 		}

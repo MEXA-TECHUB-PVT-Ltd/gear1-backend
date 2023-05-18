@@ -19,9 +19,9 @@ async function sendNotificationToUser(user_id, message) {
 		const user = await sql.query(`SELECT * FROM "user" 
 		 where id = $1 
 		  `, [user_id]);
-		  if (user.rows.length > 0) {
+		if (user.rows.length > 0) {
 			deviceToken = user.rows[0].devicetoken;
-		  }
+		}
 
 		// const result = await userModel.findOne({ id: user_id });
 		// if (result) {
@@ -66,6 +66,11 @@ async function sendNotificationToUser(user_id, message) {
 
 
 RateUser.RateUser = async (req, res) => {
+	const user = await sql.query(`select * from "user" WHERE id = $1`
+		, [req.body.user_ID])
+	const merchandise = await sql.query(`select * from "user" WHERE id = $1`
+		, [req.body.rate_by_user_ID])
+
 	if (!req.body.rate_by_user_ID || req.body.rate_by_user_ID === '') {
 		res.json({
 			message: "Please Enter rate by User-ID",
@@ -76,7 +81,8 @@ RateUser.RateUser = async (req, res) => {
 			message: "Please Enter User-ID",
 			status: false,
 		});
-	} else {
+	} else if (merchandise.rowCount > 0) {
+		if (user.rowCount > 0) {
 		sql.query(`CREATE TABLE IF NOT EXISTS public.rateusers (
         id SERIAL,
         rate_by_user_id SERIAL NOT NULL,
@@ -147,6 +153,17 @@ RateUser.RateUser = async (req, res) => {
 
 			};
 		});
+	} else {
+		res.json({
+			message: "Entered User ID is not present",
+			status: false,
+		});
+	}
+} else {
+	res.json({
+		message: "Entered Rate by User-ID is not present",
+		status: false,
+	});
 	}
 }
 

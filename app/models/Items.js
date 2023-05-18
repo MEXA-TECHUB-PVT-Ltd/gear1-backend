@@ -13,13 +13,19 @@ const Items = function (Items) {
 };
 
 Items.Add = async (req, res) => {
+	const user = await sql.query(`select * from "user" WHERE id = $1`
+		, [req.body.user_ID])
+	const merchandise = await sql.query(`select * from categories WHERE id = $1`
+		, [req.body.category_id])
+
 	if (!req.body.user_ID || req.body.user_ID === '') {
 		res.json({
 			message: "Please Enter user-ID",
 			status: false,
 		});
-	} else {
-		sql.query(`CREATE TABLE IF NOT EXISTS public.items (
+	} else if (merchandise.rowCount > 0) {
+		if (user.rowCount > 0) {
+			sql.query(`CREATE TABLE IF NOT EXISTS public.items (
         id SERIAL NOT NULL,
 		userid SERIAL NOT NULL,
         images TEXT[],
@@ -35,58 +41,69 @@ Items.Add = async (req, res) => {
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));` , (err, result) => {
-			if (err) {
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				sql.query(`INSERT INTO items (id,userid ,images, name,price,category_id,description , location,
+				if (err) {
+					res.json({
+						message: "Try Again",
+						status: false,
+						err
+					});
+				} else {
+					sql.query(`INSERT INTO items (id,userid ,images, name,price,category_id,description , location,
 					 promoted, start_date , end_date , added_by ,  createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,$7,$8,$9,$10,$11,  'NOW()', 'NOW()') RETURNING * `
-					, [req.body.user_ID, [], req.body.name, req.body.price,
-					req.body.category_id, req.body.description, req.body.location, 'false'
-						, req.body.start_date, req.body.end_date, req.body.added_by], (err, result) => {
-							if (err) {
-								console.log(err);
-								res.json({
-									message: "Try Again",
-									status: false,
-									err
-								});
-							}
-							else {
-								if (req.body.promoted === 'true') {
-									// 86400000 ===== 24 hours
-									const startTime = new Date(req.body.start_date);
-									console.log(startTime);
-									const endTime = new Date(startTime.getTime() + 1000);
-									let job1 = schedule.scheduleJob({ start: startTime, end: endTime, rule: '*/1 * * * * *' }, async function () {
-										const userData = await sql.query(`UPDATE "items" SET promoted = $1
-									 WHERE id = $2;`, ['true', result.rows[0].id]);
-										console.log('status Change!');
-
-									});
-									const startTimeFalse = new Date(req.body.end_date);
-									console.log(startTimeFalse);
-									const endTimeFalse = new Date(startTimeFalse.getTime() + 1000);
-									let job = schedule.scheduleJob({ start: startTimeFalse, end: endTimeFalse, rule: '*/1 * * * * *' }, async function () {
-										const userData = await sql.query(`UPDATE "items" SET promoted = $1
-									 WHERE id = $2;`, ['false', result.rows[0].id]);
-										console.log('status Change!');
+						, [req.body.user_ID, [], req.body.name, req.body.price,
+						req.body.category_id, req.body.description, req.body.location, 'false'
+							, req.body.start_date, req.body.end_date, req.body.added_by], (err, result) => {
+								if (err) {
+									console.log(err);
+									res.json({
+										message: "Try Again",
+										status: false,
+										err
 									});
 								}
-								res.json({
-									message: "product added Successfully!",
-									status: true,
-									result: result.rows,
-								});
-							}
+								else {
+									if (req.body.promoted === 'true') {
+										// 86400000 ===== 24 hours
+										const startTime = new Date(req.body.start_date);
+										console.log(startTime);
+										const endTime = new Date(startTime.getTime() + 1000);
+										let job1 = schedule.scheduleJob({ start: startTime, end: endTime, rule: '*/1 * * * * *' }, async function () {
+											const userData = await sql.query(`UPDATE "items" SET promoted = $1
+									 WHERE id = $2;`, ['true', result.rows[0].id]);
+											console.log('status Change!');
 
-						})
+										});
+										const startTimeFalse = new Date(req.body.end_date);
+										console.log(startTimeFalse);
+										const endTimeFalse = new Date(startTimeFalse.getTime() + 1000);
+										let job = schedule.scheduleJob({ start: startTimeFalse, end: endTimeFalse, rule: '*/1 * * * * *' }, async function () {
+											const userData = await sql.query(`UPDATE "items" SET promoted = $1
+									 WHERE id = $2;`, ['false', result.rows[0].id]);
+											console.log('status Change!');
+										});
+									}
+									res.json({
+										message: "product added Successfully!",
+										status: true,
+										result: result.rows,
+									});
+								}
 
-			};
+							})
+
+				};
+			});
+		} else {
+			res.json({
+				message: "Entered User ID is not present",
+				status: false,
+			});
+		}
+	} else {
+		res.json({
+			message: "Entered Catagory ID is not present",
+			status: false,
 		});
 	}
 }
@@ -272,7 +289,7 @@ Items.GetLocIDItems = async (req, res) => {
 				res.json({
 					message: "User's items data by location",
 					status: true,
-					count:data.rows[0].count,
+					count: data.rows[0].count,
 					result: result.rows,
 				});
 			}
@@ -296,7 +313,7 @@ Items.GetUserItems = async (req, res) => {
 				res.json({
 					message: "User's items data",
 					status: true,
-					count:data.rows[0].count,
+					count: data.rows[0].count,
 					result: result.rows,
 				});
 			}
@@ -320,7 +337,7 @@ Items.GetAllItems = async (req, res) => {
 				res.json({
 					message: "User's items data",
 					status: true,
-					count:data.rows[0].count,
+					count: data.rows[0].count,
 					result: result.rows,
 				});
 			}
@@ -343,7 +360,7 @@ Items.GetItemsByCategory = async (req, res) => {
 				res.json({
 					message: "Category's items data",
 					status: true,
-					count:data.rows[0].count,
+					count: data.rows[0].count,
 					result: result.rows,
 				});
 			}
