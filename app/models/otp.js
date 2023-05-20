@@ -59,7 +59,7 @@ const sendOTPVerificationEmail = async (type, req, res) => {
                     const found_email_query = 'SELECT * FROM otp WHERE email = $1'
                     const foundStoredOtp = await sql.query(found_email_query, [email])
 
-                    if (foundStoredOtp.rowCount == 0) {
+                    if (foundStoredOtp.rowCount === 0) {
                         const query = `INSERT INTO otp (id, email , otp, status,type, oldPassword , newPassword , createdAt, updatedAt)
                          VALUES (DEFAULT, $1 , $2, $3,$4,$5,$6, NOW(), NOW()) RETURNING*`
                         result = await sql.query(query, [email, otp, 'pending', type, oldPassword, newPassword])
@@ -67,7 +67,7 @@ const sendOTPVerificationEmail = async (type, req, res) => {
                     }
 
                     if (foundStoredOtp.rowCount > 0) {
-                        let query = 'UPDATE otp SET otp = $1  WHERE email = $2 RETURNING*'
+                        let query = 'UPDATE otp SET otp = $1  WHERE email = $2 RETURNING *'
                         let values = [
                             otp ? otp : null,
                             email ? email : null
@@ -281,7 +281,8 @@ otp.verifyOTPChangePassword = async (req, res) => {
     try {
         const email = req.body.email;
         const otp = req.body.otp;
-        const found_email_query = `SELECT * FROM otp WHERE email = $1 AND otp = $2 AND type = 'ChangePassword' `
+        const found_email_query = `SELECT * FROM otp WHERE email = $1 AND 
+        otp = $2 AND type = 'ChangePassword' `
         const OtpResult = await sql.query(found_email_query, [email, otp])
         if (OtpResult.rowCount > 0) {
             sql.query(`SELECT * FROM "admin" WHERE email = $1`, [req.body.email], async (err, AdminResult) => {

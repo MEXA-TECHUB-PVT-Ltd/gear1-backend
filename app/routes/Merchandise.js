@@ -12,7 +12,7 @@ module.exports = app => {
     router.delete("/delete_merchandise", Merchandise.Delete);
     router.post("/get_merchandise", Merchandise.GetMerchandise);
     router.put("/update_merchandise", Merchandise.Update);
-    router.post("/get_all_merchandise", Merchandise.GetAllMerchandise);
+    router.get("/get_all_merchandise", Merchandise.GetAllMerchandise);
 
     // router.post("/search_merchandise_by_name", Merchandise.search);
     // router.post("/get_merchandise_by_category", Merchandise.GetMerchandiseByCategory);

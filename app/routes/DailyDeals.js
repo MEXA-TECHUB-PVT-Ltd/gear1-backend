@@ -14,7 +14,7 @@ module.exports = app => {
     router.post("/get_all_active_daily_deals", DailyDeals.GetAllActiveDeals);
     router.post("/get_all_daily_deals", DailyDeals.GetAllDailyDeals);
 
-    // router.delete("/delete_dailydeals", DailyDeals.Delete);
+    router.delete("/delete_dailydeals", DailyDeals.Delete);
 
     app.use("/dailydeals", router);
 };

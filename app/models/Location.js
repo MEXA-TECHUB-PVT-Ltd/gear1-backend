@@ -60,10 +60,9 @@ Location.Add = async (req, res) => {
 }
 
 Location.ViewAllLocationUser = (req, res) => {
-	sql.query(`SELECT  "user".username, "user".email , "user".phone,
+	sql.query(`SELECT "locations".*,  "user".username, "user".email , "user".phone,
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
-	 AS Cover_Image ,"user".status ,
-	"locations".location_name FROM "locations" JOIN "user" 
+	 AS Cover_Image ,"user".status FROM "locations" JOIN "user" 
 	ON "locations".user_id = "user".id where "locations".user_id = $1;`,[req.body.user_ID], (err, result) => {
 		if (err) {
 			console.log(err);
@@ -84,10 +83,9 @@ Location.ViewAllLocationUser = (req, res) => {
 }
 
 Location.ViewAllLocation = (req, res) => {
-	sql.query(`SELECT  "user".username, "user".email , "user".phone,
+	sql.query(`SELECT "locations".*,  "user".username, "user".email , "user".phone,
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
-	 AS Cover_Image ,"user".status ,
-	"locations".location_name FROM "locations" JOIN "user" 
+	 AS Cover_Image ,"user".status  FROM "locations" JOIN "user" 
 	ON "locations".user_id = "user".id`, (err, result) => {
 		if (err) {
 			console.log(err);
@@ -108,10 +106,9 @@ Location.ViewAllLocation = (req, res) => {
 }
 
 Location.ViewALocation = (req, res) => {
-	sql.query(`SELECT  "user".username, "user".email , "user".phone,
+	sql.query(`SELECT  "locations".*, "user".username, "user".email , "user".phone,
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
-	 AS Cover_Image ,"user".status ,
-	"locations".location_name FROM "locations" JOIN "user" 
+	 AS Cover_Image ,"user".status  FROM "locations" JOIN "user" 
 	ON "locations".user_id = "user".id where "locations".id = $1;`,[req.body.Location_ID], (err, result) => {
 		if (err) {
 			console.log(err);

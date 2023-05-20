@@ -11,7 +11,7 @@ const SocialMedia = function (SocialMedia) {
 
 SocialMedia.Add = async (req, res) => {
 	const user = await sql.query(`select * from "user" WHERE id = $1`
-		, [req.body.user_ID])
+		, [req.body.userID])
 	if (!req.body.userID || req.body.userID === '') {
 		res.json({
 			message: "Please Enter userID",

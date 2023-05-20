@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS public.merchandise (
         price text,
         category_id text,
         description text,
-        location_id INTEGER,
+        location text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));

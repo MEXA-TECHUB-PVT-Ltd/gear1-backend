@@ -10,15 +10,15 @@ exports.Add = (req, res) => {
   }  
   DailyDeals.Add( req, res);
 };
-// exports.Delete = (req, res) => {
-//   if (!req.body) {
-//     res.json({
-//       message: "Content can not be empty!",
-//       status: false,
-//      });
-//   }  
-//   DailyDeals.Delete( req, res);
-// };
+exports.Delete = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  DailyDeals.Delete( req, res);
+};
 
 exports.Update = (req, res) => {
   if (!req.body) {
