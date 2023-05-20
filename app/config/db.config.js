@@ -6,17 +6,17 @@ const path = require('path');
 
 
 const sql = new Pool({
-  host: "localhost",
-  user: "postgres",
-  password: "1234",
-  database: "gear1",
-  max: 5,
-  // host:'postgres-staging-projects.mtechub.com', 
-  // port :5432 ,
-  // user :'gearoneuser' ,
-  // password :'mtechub123123',
-  // database :  'gearone',
-  // max : 10
+  // host: "localhost",
+  // user: "postgres",
+  // password: "1234",
+  // database: "gear1",
+  // max: 5,
+  host:'postgres-staging-projects.mtechub.com', 
+  port :5432 ,
+  user :'gearoneuser' ,
+  password :'mtechub123123',
+  database :  'gearone',
+  max : 10
 });
 
 

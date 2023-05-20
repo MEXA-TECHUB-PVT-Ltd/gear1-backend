@@ -31,6 +31,16 @@ exports.GetAdminByID = (req, res) => {
   admin.GetAdminByID( req, res);
 };
 
+exports.updateProfile = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  admin.updateProfile( req, res);
+};
+
 exports.verifyOTPSignIn = (req, res) => {
   if (!req.body) {
     res.json({

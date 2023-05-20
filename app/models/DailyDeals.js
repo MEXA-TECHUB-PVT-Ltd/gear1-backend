@@ -277,7 +277,7 @@ DailyDeals.Update = async (req, res) => {
 				title = oldName;
 			}
 			if (status === undefined || status === '') {
-				status = oldCategory_id;
+				status = oldstatus;
 			}
 			if (ends_at === undefined || ends_at === '') {
 				ends_at = oldPrice;
@@ -333,33 +333,33 @@ DailyDeals.Update = async (req, res) => {
 }
 
 
-// DailyDeals.Delete = async (req, res) => {
-// 	const data = await sql.query(`select * from dailydeals WHERE id = $1 `
-// 		, [req.body.DailyDeal_ID])
-// 	if (data.rows.length === 1) {
-// 		sql.query(`DELETE FROM dailydeals WHERE id = ${req.body.DailyDeal_ID};`, (err, result) => {
-// 			if (err) {
-// 				res.json({
-// 					message: "Try Again",
-// 					status: false,
-// 					err
-// 				});
-// 			} else {
-// 				res.json({
-// 					message: "Item Deleted Successfully!",
-// 					status: true,
-// 					result: data.rows,
+DailyDeals.Delete = async (req, res) => {
+	const data = await sql.query(`select * from dailydeals WHERE id = $1 `
+		, [req.body.DailyDeal_ID])
+	if (data.rows.length === 1) {
+		sql.query(`DELETE FROM dailydeals WHERE id = ${req.body.DailyDeal_ID};`, (err, result) => {
+			if (err) {
+				res.json({
+					message: "Try Again",
+					status: false,
+					err
+				});
+			} else {
+				res.json({
+					message: "Daily Deal Deleted Successfully!",
+					status: true,
+					result: data.rows,
 
-// 				});
-// 			}
-// 		});
-// 	} else {
-// 		res.json({
-// 			message: "Not Found",
-// 			status: false,
-// 		});
-// 	}
-// }
+				});
+			}
+		});
+	} else {
+		res.json({
+			message: "Not Found",
+			status: false,
+		});
+	}
+}
 
 
 module.exports = DailyDeals;

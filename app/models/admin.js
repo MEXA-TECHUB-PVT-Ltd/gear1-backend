@@ -212,8 +212,6 @@ admin.BlockUnblockUser = async (req, res) => {
 	}
 }
 
-
-
 admin.GetUserByID = (req, res) => {
 	sql.query(`SELECT * FROM "user" WHERE  id = $1`, [req.params.id], (err, result) => {
 		if (err) {
@@ -344,5 +342,74 @@ admin.newPassword = async (req, res) => {
 }
 
 
+
+admin.updateProfile = async (req, res) => {
+	if (req.body.id === '') {
+		res.json({
+			message: "id is required",
+			status: false,
+		});
+	} else {
+		const userData = await sql.query(`select * from "admin" where id = $1`, [req.body.id]);
+		if (userData.rowCount === 1) {
+
+			// const oldName = userData.rows[0].username;
+			const oldEmail = userData.rows[0].email;
+			// const oldPhone = userData.rows[0].phone;
+			// const oldCountry_code = userData.rows[0].country_code;
+			// let image = userData.rows[0].image;
+			// let cover_image = userData.rows[0].cover_image;
+
+			let { id, email} = req.body;
+			// if (req.file) {
+			// 	const { path } = req.file;
+			// 	photo = path;
+			// }
+			// if (username === undefined || username === '') {
+			// 	username = oldName;
+			// }
+			if (email === undefined || email === '') {
+				email = oldEmail;
+			}
+			// if (phone === undefined || phone === '') {
+			// 	phone = oldPhone;
+			// }
+
+			// if (country_code === undefined || country_code === '') {
+			// 	country_code = oldCountry_code;
+			// }
+			sql.query(`UPDATE "admin" SET  email = $1  WHERE id = $2;`,
+				[ email, id], async (err, result) => {
+					if (err) {
+						console.log(err);
+						res.json({
+							message: "Try Again",
+							status: false,
+							err
+						});
+					} else {
+						if (result.rowCount === 1) {
+							const data = await sql.query(`select * from "admin" where id = $1`, [req.body.id]);
+							res.json({
+								message: "admin Updated Successfully!",
+								status: true,
+								result: data.rows,
+							});
+						} else if (result.rowCount === 0) {
+							res.json({
+								message: "Not Found",
+								status: false,
+							});
+						}
+					}
+				});
+		} else {
+			res.json({
+				message: "Not Found",
+				status: false,
+			});
+		}
+	}
+}
 
 module.exports = admin;

@@ -197,7 +197,8 @@ ads.Get = (req, res) => {
 
 ads.GetAll = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "ads"`)
-	sql.query(`SELECT *  FROM "ads"  `, (err, result) => {
+	sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
+	ON "ads".screen_id = "screens".id`, (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
@@ -206,13 +207,14 @@ ads.GetAll = async (req, res) => {
 				err
 			});
 		} else {
-			result.rows.push({
-				allads:
-					data.rows[0].allads
-			});
+			// result.rows.push({
+			// 	allads:
+			// 		data.rows[0].allads
+			// });
 			res.json({
 				message: "Ad's Data",
 				status: true,
+				count:data.rows[0].allads,
 				result: result.rows,
 			});
 		}

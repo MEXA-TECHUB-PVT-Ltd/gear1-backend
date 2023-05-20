@@ -344,33 +344,33 @@ Logos.UpdateStatus = async (req, res) => {
 
 
 
-// Logos.Delete = async (req, res) => {
-// 	const data = await sql.query(`select * from Logos WHERE id = $1`
-// 		, [req.body.logo_id])
-// 	if (data.rows.length === 1) {
-// 		sql.query(`DELETE FROM Logos WHERE id = ${req.body.logo_id};`, (err, result) => {
-// 			if (err) {
-// 				res.json({
-// 					message: "Try Again",
-// 					status: false,
-// 					err
-// 				});
-// 			} else {
-// 				res.json({
-// 					message: "Logo Deleted Successfully!",
-// 					status: true,
-// 					result: data.rows,
+Logos.Delete = async (req, res) => {
+	const data = await sql.query(`select * from logos WHERE id = $1`
+		, [req.body.logo_id])
+	if (data.rows.length === 1) {
+		sql.query(`DELETE FROM logos WHERE id = ${req.body.logo_id};`, (err, result) => {
+			if (err) {
+				res.json({
+					message: "Try Again",
+					status: false,
+					err
+				});
+			} else {
+				res.json({
+					message: "Logo Deleted Successfully!",
+					status: true,
+					result: data.rows,
 
-// 				});
-// 			}
-// 		});
-// 	} else {
-// 		res.json({
-// 			message: "Not Found",
-// 			status: false,
-// 		});
-// 	}
-// }
+				});
+			}
+		});
+	} else {
+		res.json({
+			message: "Not Found",
+			status: false,
+		});
+	}
+}
 
 
 module.exports = Logos;

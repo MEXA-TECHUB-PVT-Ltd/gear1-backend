@@ -10,15 +10,15 @@ exports.Add = (req, res) => {
   }  
   Logos.Add( req, res);
 };
-// exports.Delete = (req, res) => {
-//   if (!req.body) {
-//     res.json({
-//       message: "Content can not be empty!",
-//       status: false,
-//      });
-//   }  
-//   Logos.Delete( req, res);
-// };
+exports.Delete = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Logos.Delete( req, res);
+};
 
 exports.addImage = (req, res) => {
   if (!req.body) {

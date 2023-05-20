@@ -85,7 +85,7 @@ Follow.Follow = async (req, res) => {
         user_id SERIAL NOT NULL,
         createdAt timestamp,
         updatedAt timestamp ,
-        PRIMARY KEY (id));  ` , (err, result) => {
+        PRIMARY KEY (id));  ` , async (err, result) => {
 				if (err) {
 					res.json({
 						message: "Try Again",
@@ -93,59 +93,83 @@ Follow.Follow = async (req, res) => {
 						err
 					});
 				} else {
-					sql.query(`INSERT INTO followusers (id, follow_by_user_id , user_id, createdAt ,updatedAt )
+					const isFollow = await sql.query(`SELECT * FROM "followusers" where user_id = $1 
+					AND follow_by_user_id = $2
+					 `, [req.body.user_ID, req.body.follow_by_user_id]);
+					if (isFollow.rowCount > 0) {
+						sql.query(`DELETE FROM "followusers" where user_id = $1 
+						AND follow_by_user_id = $2
+						 `, [req.body.user_ID, req.body.follow_by_user_id], (err, result) => {
+							if (err) {
+								res.json({
+									message: "Try Again",
+									status: false,
+									err
+								});
+							} else {
+								res.json({
+									message: "User Unfollowed Successfully!",
+									status: true,
+									result: isFollow.rows,
+
+								});
+							}
+						});
+
+					} else {
+						sql.query(`INSERT INTO followusers (id, follow_by_user_id , user_id, createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2,'NOW()', 'NOW()') 
 							RETURNING * `, [req.body.follow_by_user_ID, req.body.user_ID], async (err, result) => {
-						if (err) {
-							res.json({
-								message: "Try Again",
-								status: false,
-								err
-							});
-						}
-						else {
-							const user = await sql.query(`SELECT  "user".username FROM "followusers" JOIN "user" 
+							if (err) {
+								res.json({
+									message: "Try Again",
+									status: false,
+									err
+								});
+							}
+							else {
+								const user = await sql.query(`SELECT  "user".username FROM "followusers" JOIN "user" 
 						ON "followusers".follow_by_user_id = "user".id where "followusers".follow_by_user_id = $1 
 						  `, [req.body.follow_by_user_ID]);
-							if (user.rows.length > 1) {
-								console.log(user.rows[0].username);
+								if (user.rows.length > 1) {
+									console.log(user.rows[0].username);
 
 
-								sendNotificationToUser(req.body.user_ID, `${user.rows[0].username} Follows you`);
+									sendNotificationToUser(req.body.user_ID, `${user.rows[0].username} Follows you`);
 
 
 
-								const data = await sql.query(`INSERT INTO  "notifications"
+									const data = await sql.query(`INSERT INTO  "notifications"
 							 (id, user_id, notification_from , notification_message , createdAt ,updatedAt)
 							 VALUES (DEFAULT, $1  , $2,$3,'NOW()', 'NOW()') 
 							  `, [req.body.user_ID, req.body.follow_by_user_ID, `${user.rows[0].username} Follows you `]);
-								if (data.rows.length > 1) {
+									if (data.rows.length > 1) {
+										res.json({
+											message: "User Followed Successfully!",
+											status: true,
+											result: result.rows,
+										});
+									}
+									else {
+										res.json({
+											message: "User Followed Successfully!",
+											status: true,
+											result: result.rows,
+										});
+									}
+								} else {
 									res.json({
 										message: "User Followed Successfully!",
 										status: true,
 										result: result.rows,
 									});
 								}
-								else {
-									res.json({
-										message: "User Followed Successfully!",
-										status: true,
-										result: result.rows,
-									});
-								}
-							} else {
-								res.json({
-									message: "User Followed Successfully!",
-									status: true,
-									result: result.rows,
-								});
+
 							}
+						})
 
-
-						}
-					})
-
-				};
+					};
+				}
 			});
 		} else {
 			res.json({

@@ -9,6 +9,7 @@ module.exports = app => {
     router.post("/verify_OTP_sign_in", admin.verifyOTPSignIn);
     router.put("/resetPassword", admin.VerifyEmailChangePassword);
     router.put("/verify_OTP_change_password", admin.verifyOTPChangePassword);
+    router.put("/update_profile", admin.updateProfile);
 
     router.get("/get_all_user", admin.GetAllUser)
     router.post("/block_unblock_user", admin.BlockUnblockUser)

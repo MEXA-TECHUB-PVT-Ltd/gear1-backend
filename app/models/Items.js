@@ -252,7 +252,11 @@ Items.addImages = async (req, res) => {
 }
 
 
-Items.GetItem = (req, res) => {
+Items.GetItem = async (req, res) => {
+	const liked = await sql.query(`SELECT user_id  AS likey_by FROM "likeitems"
+	 WHERE item_id = $1  `
+	, [req.body.Item_ID]);
+
 	sql.query(`SELECT * FROM "items" WHERE id = $1  `
 		, [req.body.Item_ID], (err, result) => {
 			if (err) {
@@ -266,6 +270,7 @@ Items.GetItem = (req, res) => {
 				res.json({
 					message: "items data",
 					status: true,
+					liked_by: liked.rows,
 					result: result.rows,
 				});
 			}
@@ -369,7 +374,9 @@ Items.GetItemsByCategory = async (req, res) => {
 }
 
 
-Items.search = (req, res) => {
+Items.search = async (req, res) => {
+	const data = await sql.query(`SELECT * FROM "categories" WHERE name ILIKE  $1 ORDER BY "createdat" DESC `
+	, [`${req.body.name}%`]);
 	sql.query(`SELECT * FROM "items" WHERE name ILIKE  $1 ORDER BY "createdat" DESC `
 		, [`${req.body.name}%`], (err, result) => {
 			if (err) {
@@ -383,7 +390,8 @@ Items.search = (req, res) => {
 				res.json({
 					message: "Search's items data",
 					status: true,
-					result: result.rows,
+					categories: data.rows,
+					items: result.rows,
 				});
 			}
 		});

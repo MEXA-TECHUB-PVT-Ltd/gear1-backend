@@ -7,7 +7,7 @@ const Merchandise = function (Merchandise) {
 	this.price = Merchandise.price;
 	this.category_id = Merchandise.category_id;
 	this.description = Merchandise.description;
-	this.location_id = Merchandise.location_id;
+	this.location = Merchandise.location;
 	// this.shares = Merchandise.shares;
 };
 
@@ -16,8 +16,8 @@ Merchandise.Add = async (req, res) => {
 		, [req.body.adminID])
 	const merchandise = await sql.query(`select * from categories WHERE id = $1`
 		, [req.body.category_id])
-	const location = await sql.query(`select * from locations WHERE id = $1`
-		, [req.body.location_id])
+	// const location = await sql.query(`select * from locations WHERE id = $1`
+	// 	, [req.body.location])
 
 	if (!req.body.adminID || req.body.adminID === '') {
 		res.json({
@@ -26,7 +26,7 @@ Merchandise.Add = async (req, res) => {
 		});
 	} else if (merchandise.rowCount > 0) {
 		if (user.rowCount > 0) {
-			if (location.rowCount > 0) {
+			// if (location.rowCount > 0) {
 				// location INTEGER,
 				// shares INTEGER,	
 				sql.query(`CREATE TABLE IF NOT EXISTS public.merchandise (
@@ -37,7 +37,7 @@ Merchandise.Add = async (req, res) => {
 		price text,
         category_id text,
         description text,
-		location_id INTEGER,
+		location text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));` , (err, result) => {
@@ -48,10 +48,10 @@ Merchandise.Add = async (req, res) => {
 							err
 						});
 					} else {
-						sql.query(`INSERT INTO merchandise (id, adminID ,images, name,price,category_id,description,location_id , createdAt ,updatedAt )
+						sql.query(`INSERT INTO merchandise (id, adminID ,images, name,price,category_id,description,location , createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6, $7 , 'NOW()', 'NOW()') RETURNING * `
 							, [req.body.adminID, [], req.body.name, req.body.price,
-							req.body.category_id, req.body.description, req.body.location_id], (err, result) => {
+							req.body.category_id, req.body.description, req.body.location], (err, result) => {
 								if (err) {
 									console.log(err);
 									res.json({
@@ -72,12 +72,12 @@ Merchandise.Add = async (req, res) => {
 
 					};
 				});
-			} else {
-				res.json({
-					message: "Entered location ID is not present",
-					status: false,
-				});
-			}
+			// } else {
+			// 	res.json({
+			// 		message: "Entered location ID is not present",
+			// 		status: false,
+			// 	});
+			// }
 
 		} else {
 			res.json({
@@ -96,6 +96,7 @@ Merchandise.Add = async (req, res) => {
 
 
 Merchandise.addImages = async (req, res) => {
+	console.log(req.body.id);
 	if (req.body.id === '') {
 		res.json({
 			message: "id is required",
@@ -104,18 +105,31 @@ Merchandise.addImages = async (req, res) => {
 	} else {
 		const userData = await sql.query(`select * from "merchandise" where id = $1`, [req.body.id]);
 		if (userData.rowCount === 1) {
-
+			console.log(req.files)
 			let photo = userData.rows[0].images;
 			console.log(photo.length);
 			if (photo.length < 5) {
 				if (req.files.length < 6) {
-					if (photo.length + 1 + req.files.length <= 5) {
+					console.log("length" + photo.length + req.files.length)
+					if (photo.length + req.files.length <= 5) {
 						let { id } = req.body;
 						if (req.files) {
 							req.files.forEach(function (file) {
 								photo.push(file.path)
 							})
 						}
+
+			// let photo = userData.rows[0].images;
+			// console.log(photo.length);
+			// if (photo.length < 5) {
+			// 	if (req.files.length < 6) {
+			// 		if (photo.length + 1 + req.files.length <= 5) {
+			// 			let { id } = req.body;
+			// 			if (req.files) {
+			// 				req.files.forEach(function (file) {
+			// 					photo.push(file.path)
+			// 				})
+			// 			}
 						sql.query(`UPDATE "merchandise" SET images = $1 WHERE id = $2;`,
 							[photo, req.body.id], async (err, result) => {
 								if (err) {
@@ -171,10 +185,10 @@ Merchandise.addImages = async (req, res) => {
 
 
 Merchandise.GetMerchandise = (req, res) => {
-	sql.query(`SELECT "merchandise".* , "categories".name AS Catagory_name, "locations".location_name 
+	sql.query(`SELECT "merchandise".* , "categories".name AS Catagory_name
 	 FROM "merchandise" JOIN "categories" 
 	ON  CAST( "merchandise".category_id AS INT) = "categories".id 
-	JOIN "locations" ON "merchandise".location_id = "locations".id WHERE "merchandise".id = $1 `
+	 WHERE "merchandise".id = $1 `
 		, [req.body.Merchandise_ID], (err, result) => {
 			if (err) {
 				console.log(err);
@@ -197,10 +211,9 @@ Merchandise.GetMerchandise = (req, res) => {
 
 Merchandise.GetAllMerchandise = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "merchandise"`);
-	sql.query(`SELECT "merchandise".* , "categories".name AS Catagory_name, "locations".location_name 
+	sql.query(`SELECT "merchandise".* , "categories".name AS Catagory_name
 	FROM "merchandise" JOIN "categories" 
-   ON  CAST( "merchandise".category_id AS INT) = "categories".id 
-   JOIN "locations" ON "merchandise".location_id = "locations".id ORDER BY "createdat" DESC`
+   ON  CAST( "merchandise".category_id AS INT) = "categories".id  ORDER BY "createdat" DESC`
 		, (err, result) => {
 			if (err) {
 				console.log(err);
@@ -283,8 +296,9 @@ Merchandise.Update = async (req, res) => {
 			const oldCategory_id = userData.rows[0].category_id;
 			const oldPrice = userData.rows[0].price;
 			const oldDescription = userData.rows[0].description;
+			const oldlocation = userData.rows[0].location;
 
-			let { Merchandise_ID, name, category_id, price, description } = req.body;
+			let { Merchandise_ID, name, category_id, location,price, description } = req.body;
 			if (name === undefined || name === '') {
 				name = oldName;
 			}
@@ -298,9 +312,13 @@ Merchandise.Update = async (req, res) => {
 			if (description === undefined || description === '') {
 				description = oldDescription;
 			}
+			if (location === undefined || location === '') {
+				location = oldlocation;
+			}
+
 			sql.query(`UPDATE "merchandise" SET name = $1, category_id = $2, 
-		price = $3, description = $4 WHERE id = $5;`,
-				[name, category_id, price, description, Merchandise_ID], async (err, result) => {
+		price = $3, description = $4 , location = $5 WHERE id = $6;`,
+				[name, category_id, price, description, location,Merchandise_ID], async (err, result) => {
 					if (err) {
 						console.log(err);
 						res.json({
