@@ -137,7 +137,7 @@ Logos.Get = (req, res) => {
 Logos.GetAll = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "logos"`)
 	sql.query(`SELECT "logos".*, "screens".name AS screen_name FROM "logos" JOIN "screens"
-	 ON "logos".screen_id = "screens".id`, (err, result) => {
+	 ON "logos".screen_id = "screens".id ORDER BY "createdat" DESC `, (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
@@ -195,7 +195,7 @@ Logos.GetActiveByScreen = async (req, res) => {
 
 	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "logos"`)
 	sql.query(`SELECT "logos".*, "screens".name AS screen_name FROM "logos" JOIN "screens"
-	ON "logos".screen_id = "screens".id WHERE "logos".screen_id = $1 AND "logos".active_status = $2`,
+	ON "logos".screen_id = "screens".id WHERE "logos".screen_id = $1 AND "logos".active_status = $2 ORDER BY "createdat" DESC `,
 	[req.body.screen_id, 'active'], (err, result) => {
 			if (err) {
 				console.log(err);

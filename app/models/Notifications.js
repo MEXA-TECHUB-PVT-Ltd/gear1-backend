@@ -10,7 +10,7 @@ const Notifications = function (Notifications) {
 
 
 Notifications.rateUser = (req, res) => {
-	sql.query(`SELECT * FROM notifications WHERE user_id = $1;`,[req.body.user_id], (err, result) => {
+	sql.query(`SELECT * FROM notifications WHERE user_id = $1 ORDER BY "createdat" DESC ;`,[req.body.user_id], (err, result) => {
 		if (err) {
 			res.json({
 				message: "Try Again",

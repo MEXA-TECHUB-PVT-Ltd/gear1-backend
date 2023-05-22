@@ -86,7 +86,7 @@ Location.ViewAllLocation = (req, res) => {
 	sql.query(`SELECT "locations".*,  "user".username, "user".email , "user".phone,
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
 	 AS Cover_Image ,"user".status  FROM "locations" JOIN "user" 
-	ON "locations".user_id = "user".id`, (err, result) => {
+	ON "locations".user_id = "user".id ORDER BY "createdat" DESC `, (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({

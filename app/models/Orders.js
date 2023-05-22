@@ -82,7 +82,7 @@ Orders.GetAll = (req, res) => {
 	 "merchandise".name AS Merchandise_Name , "merchandise".price,
 	  "merchandise".description AS Merchandise_description
 	 FROM "orders" JOIN "user" ON "orders".user_id = "user".id
-	  JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id`, (err, result) => {
+	  JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id ORDER BY "createdat" DESC `, (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
@@ -107,7 +107,7 @@ Orders.GetByUserID = (req, res) => {
 	"merchandise".name AS Merchandise_Name , "merchandise".price,
 	 "merchandise".description AS Merchandise_description
 	FROM "orders" JOIN "user" ON "orders".user_id = "user".id
-	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".user_id = $1`
+	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".user_id = $1 ORDER BY "createdat" DESC `
 		, [req.body.user_id], (err, result) => {
 			if (err) {
 				console.log(err);
@@ -133,7 +133,7 @@ Orders.GetByMarchandiseID = (req, res) => {
 	"merchandise".name AS Merchandise_Name , "merchandise".price,
 	 "merchandise".description AS Merchandise_description
 	FROM "orders" JOIN "user" ON "orders".user_id = "user".id
-	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".merchandise_id = $1`
+	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".merchandise_id = $1 ORDER BY "createdat" DESC `
 		, [req.body.merchandise_id], (err, result) => {
 			if (err) {
 				console.log(err);
@@ -159,7 +159,7 @@ Orders.GetByStatus = (req, res) => {
 	"merchandise".name AS Merchandise_Name , "merchandise".price,
 	 "merchandise".description AS Merchandise_description
 	FROM "orders" JOIN "user" ON "orders".user_id = "user".id
-	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".status = $1`
+	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".status = $1 ORDER BY "createdat" DESC `
 		, [req.body.status], (err, result) => {
 			if (err) {
 				console.log(err);
@@ -185,7 +185,7 @@ Orders.GetUserOrders_ByStatus = (req, res) => {
 	"merchandise".name AS Merchandise_Name , "merchandise".price,
 	 "merchandise".description AS Merchandise_description
 	FROM "orders" JOIN "user" ON "orders".user_id = "user".id
-	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".user_id = $1 AND "orders".status = $2`
+	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".user_id = $1 AND "orders".status = $2  ORDER BY "createdat" DESC `
 		, [req.body.user_id, req.body.status], (err, result) => {
 			if (err) {
 				console.log(err);

@@ -109,7 +109,7 @@ ShareItem.ViewShareItem = (req, res) => {
 	 AS Cover_Image ,"user".status ,
 	"items".* FROM "saveitems" JOIN "user" 
 	ON "saveitems".user_id = "user".id JOIN "items" ON  "items".id 
-	= "saveitems".item_id where user_id = $1;`, [req.body.user_ID], (err, result) => {
+	= "saveitems".item_id where user_id = $1 ORDER BY "createdat" DESC ; `, [req.body.user_ID], (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
