@@ -48,12 +48,14 @@ Items.Add = async (req, res) => {
 						err
 					});
 				} else {
+					const end_date = new Date(req.body.end_date);
+					const start_date = new Date(req.body.start_date);
 					sql.query(`INSERT INTO items (id,userid ,images, name,price,category_id,description , location,
 					 promoted, start_date , end_date , added_by ,  createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,$7,$8,$9,$10,$11,  'NOW()', 'NOW()') RETURNING * `
 						, [req.body.user_ID, [], req.body.name, req.body.price,
 						req.body.category_id, req.body.description, req.body.location, 'false'
-							, req.body.start_date, req.body.end_date, req.body.added_by], (err, result) => {
+							, start_date,end_date, req.body.added_by], (err, result) => {
 								if (err) {
 									console.log(err);
 									res.json({
@@ -63,7 +65,7 @@ Items.Add = async (req, res) => {
 									});
 								}
 								else {
-									if (req.body.promoted === 'true') {
+									if (req.body.promoted === true) {
 										// 86400000 ===== 24 hours
 										const startTime = new Date(req.body.start_date);
 										console.log(startTime);
@@ -74,13 +76,14 @@ Items.Add = async (req, res) => {
 											console.log('status Change!');
 
 										});
+										
 										const startTimeFalse = new Date(req.body.end_date);
 										console.log(startTimeFalse);
 										const endTimeFalse = new Date(startTimeFalse.getTime() + 1000);
 										let job = schedule.scheduleJob({ start: startTimeFalse, end: endTimeFalse, rule: '*/1 * * * * *' }, async function () {
 											const userData = await sql.query(`UPDATE "items" SET promoted = $1
 									 WHERE id = $2;`, ['false', result.rows[0].id]);
-											console.log('status Change!');
+											console.log('status Changes After!');
 										});
 									}
 									res.json({

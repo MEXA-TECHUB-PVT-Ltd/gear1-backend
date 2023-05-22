@@ -21,7 +21,7 @@ DailyDeals.Add = async (req, res) => {
         image TEXT,
 		description text,
         title text,
-		ends_at text,
+		ends_at timestamp,
         status text,
         createdat timestamp NOT NULL,
         updatedat timestamp ,
@@ -33,9 +33,10 @@ DailyDeals.Add = async (req, res) => {
 					err
 				});
 			} else {
+				const ends_at = new Date(req.body.ends_at);
 				sql.query(`INSERT INTO dailydeals (id ,description, title ,ends_at,status, createdAt ,updatedAt )
                             VALUES (DEFAULT, $1 ,  $2, $3, $4, 'NOW()', 'NOW()') RETURNING * `
-					, [req.body.description, req.body.title, req.body.ends_at,
+					, [req.body.description, req.body.title, ends_at,
 					req.body.status], (err, result) => {
 						if (err) {
 							console.log(err);
@@ -147,7 +148,7 @@ DailyDeals.GetADailyDeal = (req, res) => {
 }
 
 DailyDeals.GetAllDailyDeals = (req, res) => {
-	sql.query(`SELECT * FROM "dailydeals" `
+	sql.query(`SELECT * FROM "dailydeals" ORDER BY "createdat" DESC  `
 		, (err, result) => {
 			if (err) {
 				console.log(err);
@@ -168,7 +169,7 @@ DailyDeals.GetAllDailyDeals = (req, res) => {
 }
 
 DailyDeals.GetAllActiveDeals = (req, res) => {
-	sql.query(`SELECT * FROM "dailydeals" WHERE status = $1 `
+	sql.query(`SELECT * FROM "dailydeals" WHERE status = $1 ORDER BY "createdat" DESC `
 		, ['active'], (err, result) => {
 			if (err) {
 				console.log(err);

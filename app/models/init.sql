@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS public.dailydeals (
         image TEXT,
         description text,
         title text,
-        ends_at text,
+        ends_at timestamp,
         status text,
         createdat timestamp NOT NULL,
         updatedat timestamp ,

@@ -69,7 +69,7 @@ Screen.GetScreen  = (req, res) => {
 }
 
 Screen.GetAllScreen = (req, res) => {
-	sql.query(`SELECT * FROM "screens";`, (err, result) => {
+	sql.query(`SELECT * FROM "screens" ORDER BY "createdat" DESC ;`, (err, result) => {
 		if (err) {
 			res.json({
 				message: "Try Again",
