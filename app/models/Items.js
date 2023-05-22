@@ -76,7 +76,7 @@ Items.Add = async (req, res) => {
 											console.log('status Change!');
 
 										});
-										
+
 										const startTimeFalse = new Date(req.body.end_date);
 										console.log(startTimeFalse);
 										const endTimeFalse = new Date(startTimeFalse.getTime() + 1000);
@@ -123,10 +123,10 @@ Items.addImages = async (req, res) => {
 		if (userData.rowCount === 1) {
 
 			let photo = userData.rows[0].images;
-			console.log(photo.length);
+			console.log(req.files);
 			if (photo.length < 5) {
 				if (req.files.length < 6) {
-					console.log("length" + photo.length + req.files.length)
+					console.log("length : " + photo.length + " req  : "+ req.files.length)
 					if (photo.length + req.files.length <= 5) {
 						let { id } = req.body;
 						if (req.files) {
@@ -421,11 +421,12 @@ Items.Update = async (req, res) => {
 			const oldCategory_id = userData.rows[0].category_id;
 			const oldPrice = userData.rows[0].price;
 			const oldDescription = userData.rows[0].description;
+			const oldLocation = userData.rows[0].location;
 			const oldPromoted = userData.rows[0].promoted;
 			const oldStart_date = userData.rows[0].start_date;
 			const oldEnd_date = userData.rows[0].end_date;
 
-			let { Item_ID, name, category_id, price, description, promoted, start_date, end_date } = req.body;
+			let { Item_ID, name, category_id, price, description, location,promoted, start_date, end_date } = req.body;
 			if (name === undefined || name === '') {
 				name = oldName;
 			}
@@ -439,6 +440,10 @@ Items.Update = async (req, res) => {
 			if (description === undefined || description === '') {
 				description = oldDescription;
 			}
+			if (location === undefined || location === '') {
+				location = oldLocation;
+			}
+
 			if (promoted === undefined || promoted === '') {
 				promoted = oldPromoted;
 			}
@@ -450,8 +455,8 @@ Items.Update = async (req, res) => {
 			}
 
 			sql.query(`UPDATE "items" SET name = $1, category_id = $2, 
-		price = $3, description = $4, promoted = $5 , start_date = $6, end_date = $7 WHERE id = $8;`,
-				[name, category_id, price, description, promoted, start_date, end_date, Item_ID], async (err, result) => {
+		price = $3, description = $4,location = $5, promoted = $5 , start_date = $6, end_date = $7 WHERE id = $8;`,
+				[name, category_id, price, description, location,promoted, start_date, end_date, Item_ID], async (err, result) => {
 					if (err) {
 						end_date
 						console.log(err);
