@@ -455,7 +455,7 @@ Items.Update = async (req, res) => {
 			}
 
 			sql.query(`UPDATE "items" SET name = $1, category_id = $2, 
-		price = $3, description = $4,location = $5, promoted = $5 , start_date = $6, end_date = $7 WHERE id = $8;`,
+		price = $3, description = $4,location = $5, promoted = $6 , start_date = $7, end_date = $8 WHERE id = $9;`,
 				[name, category_id, price, description, location,promoted, start_date, end_date, Item_ID], async (err, result) => {
 					if (err) {
 						end_date
