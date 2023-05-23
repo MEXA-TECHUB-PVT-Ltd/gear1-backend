@@ -425,8 +425,9 @@ Items.Update = async (req, res) => {
 			const oldPromoted = userData.rows[0].promoted;
 			const oldStart_date = userData.rows[0].start_date;
 			const oldEnd_date = userData.rows[0].end_date;
-
-			let { Item_ID, name, category_id, price, description, location,promoted, start_date, end_date } = req.body;
+			const end_date = new Date(req.body.end_date);
+			const start_date = new Date(req.body.start_date);
+			let { Item_ID, name, category_id, price, description, location,promoted } = req.body;
 			if (name === undefined || name === '') {
 				name = oldName;
 			}
@@ -456,7 +457,7 @@ Items.Update = async (req, res) => {
 
 			sql.query(`UPDATE "items" SET name = $1, category_id = $2, 
 		price = $3, description = $4,location = $5, promoted = $6 , start_date = $7, end_date = $8 WHERE id = $9;`,
-				[name, category_id, price, description, location,promoted, start_date, end_date, Item_ID], async (err, result) => {
+				[name, category_id, price, description, location,'false', start_date, end_date, Item_ID], async (err, result) => {
 					if (err) {
 						end_date
 						console.log(err);
@@ -468,7 +469,7 @@ Items.Update = async (req, res) => {
 					} else {
 						if (result.rowCount === 1) {
 							const data = await sql.query(`select * from "items" where id = $1`, [req.body.Item_ID]);
-							if (req.body.promoted === 'true') {
+							if (req.body.promoted === true) {
 								// 86400000 ===== 24 hours
 								const startTime = new Date(start_date);
 								console.log(startTime);

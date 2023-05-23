@@ -68,7 +68,7 @@ SocialMedia.Add = async (req, res) => {
 
 }
 SocialMedia.Get = (req, res) => {
-	sql.query(`SELECT * FROM "socialmedia" userid = $1`
+	sql.query(`SELECT * FROM "socialmedia" WHERE userid = $1`
 		, [ req.body.userID], (err, result) => {
 			if (err) {
 				console.log(err);

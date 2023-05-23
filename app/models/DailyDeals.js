@@ -272,8 +272,9 @@ DailyDeals.Update = async (req, res) => {
 			const oldstatus = userData.rows[0].status;
 			const oldPrice = userData.rows[0].ends_at;
 			const oldDescription = userData.rows[0].description;
+			const ends_at = new Date(req.body.ends_at);
 
-			let { DailyDeal_ID, title, status, ends_at, description } = req.body;
+			let { DailyDeal_ID, title, status, description } = req.body;
 			if (title === undefined || title === '') {
 				title = oldName;
 			}
