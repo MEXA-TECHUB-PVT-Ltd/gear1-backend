@@ -198,7 +198,7 @@ ads.Get = (req, res) => {
 ads.GetAll = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "ads"`)
 	sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
-	ON "ads".screen_id = "screens".id`, (err, result) => {
+	ON "ads".screen_id = "screens".id ORDER BY "createdat" DESC ;`, (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({

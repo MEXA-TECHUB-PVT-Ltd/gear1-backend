@@ -173,7 +173,7 @@ RateUser.RatedUserList = (req, res) => {
 	sql.query(`SELECT  "user".username, "user".email , "user".phone,
 	"user".country_code, "user".image AS User_Image ,"user".cover_image
 	 AS Cover_Image , "rateusers".rating AS Rating FROM "rateusers" JOIN "user" 
-	ON "rateusers".rate_by_user_id = "user".id where "rateusers".user_id = $1;`
+	ON "rateusers".rate_by_user_id = "user".id where "rateusers".user_id = $1 ORDER BY "createdat" DESC ;`
 		, [req.body.user_ID], (err, result) => {
 			if (err) {
 				console.log(err);

@@ -418,8 +418,8 @@ User.SpecificUser = async (req, res) => {
 }
 
 User.AllUsers = async (req, res) => {
-	const userData = await sql.query(`select COUNT(*) as count from "user"`);
-	sql.query(`SELECT *  FROM "user"`, (err, result) => {
+	const userData = await sql.query(`select COUNT(*) as count from "user"  `);
+	sql.query(`SELECT *  FROM "user" ORDER BY "createdat" DESC ;`, (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
@@ -437,5 +437,53 @@ User.AllUsers = async (req, res) => {
 		}
 	});
 }
+
+
+
+User.getYears = (req, res) => {
+	sql.query(`SELECT EXTRACT(year FROM  createdat) AS year
+	FROM "user" 
+	GROUP BY EXTRACT(year FROM createdat )
+	ORDER BY year `, (err, result) => {
+	if (err) {
+			console.log(err);
+			res.json({
+				message: "Try Again",
+				status: false,
+				err
+			});
+		} else {
+			res.json({
+				message: "user table's years",
+				status: true,
+				result: result.rows,
+			});
+		}
+	});
+
+}
+User.getAllUsers_MonthWise_count = (req, res) => {
+	sql.query(`SELECT EXTRACT(month FROM  createdat) AS month, COUNT(*) AS count
+	FROM "user"  Where EXTRACT(year FROM createdat ) = $1
+	GROUP BY EXTRACT(month FROM createdat )
+	ORDER BY month`,[req.body.year], (err, result) => {
+	if (err) {
+			console.log(err);
+			res.json({
+				message: "Try Again",
+				status: false,
+				err
+			});
+		} else {
+			res.json({
+				message: "Monthly added Users",
+				status: true,
+				result: result.rows,
+			});
+		}
+	});
+
+}
+
 
 module.exports = User;

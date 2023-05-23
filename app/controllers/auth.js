@@ -49,7 +49,25 @@ exports.todaysAddedUsers = (req, res) => {
   }  
   user.todaysAddedUsers( req, res);
 };
+exports.getYears = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  user.getYears( req, res);
+};
 
+exports.getAllUsers_MonthWise_count = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  user.getAllUsers_MonthWise_count( req, res);
+};
 
 exports.passwordReset = (req, res) => {
   if (!req.body) {
