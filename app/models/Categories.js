@@ -129,7 +129,7 @@ Categories.GetCategories  = (req, res) => {
 
 Categories.GetAllCategories = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "categories"`);
-	sql.query(`SELECT * FROM "categories";`, (err, result) => {
+	sql.query(`SELECT * FROM "categories" ORDER BY "createdat" DESC ;`, (err, result) => {
 		if (err) {
 			res.json({
 				message: "Try Again",

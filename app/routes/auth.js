@@ -22,6 +22,8 @@ module.exports = app => {
     router.get("/total_users", Auth.TotalUsers)
     router.get("/totay_added_users", Auth.todaysAddedUsers)
     
+    router.post("/get_monthwise_users", Auth.getAllUsers_MonthWise_count)
+    router.get("/get_years", Auth.getYears)
 
     router.get("/subscribed_user_count", Auth.SubscribedUserCount)
     router.get("/subscribed_users", Auth.SubscribedUsers)
