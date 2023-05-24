@@ -173,7 +173,7 @@ LikeItem.LikeItem = async (req, res) => {
 LikeItem.UnLikeItem = async (req, res) => {
 	const data = await sql.query(`select * from likeitems where item_id = ${req.body.item_ID} 
 	AND user_id = ${req.body.user_ID} `);
-	if (data.rows.length === 1) {
+	if (data.rows.length > 0) {
 		sql.query(`DELETE FROM likeitems WHERE item_id = $1 AND user_id = $2 ;`, [req.body.item_ID, req.body.user_ID], (err, result) => {
 			if (err) {
 				res.json({

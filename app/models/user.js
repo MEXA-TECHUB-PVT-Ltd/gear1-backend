@@ -55,10 +55,10 @@ User.create = async (req, res) => {
 					});
 				} else if (checkResult.rows.length === 0) {
 					const { phone, country_code, deviceToken } = req.body;
-					const query = `INSERT INTO "user" (id, phone, country_code, deviceToken  ,createdat ,updatedat )
-                            VALUES (DEFAULT, $1, $2,$3, 'NOW()','NOW()' ) RETURNING * `;
+					const query = `INSERT INTO "user" (id, phone, country_code, deviceToken,status  ,createdat ,updatedat )
+                            VALUES (DEFAULT, $1, $2,$3,$4, 'NOW()','NOW()' ) RETURNING * `;
 					const foundResult = await sql.query(query,
-						[phone, country_code, deviceToken]);
+						[phone, country_code, deviceToken, 'unblock']);
 					if (foundResult.rows.length > 0) {
 						if (err) {
 							res.json({
@@ -376,23 +376,23 @@ User.SpecificUser = async (req, res) => {
 	const followings = await sql.query(`SELECT COUNT(*) AS followings FROM "followusers"
 	where follow_by_user_id = $1 
 	 `, [req.params.id]);
-	 const ratings = await sql.query(`SELECT COUNT(*) AS totalRatings FROM "rateusers"
+	const ratings = await sql.query(`SELECT COUNT(*) AS totalRatings FROM "rateusers"
 	 where user_id = $1 
 	  `, [req.params.id]);
-	  const avgRatings = await sql.query(`SELECT rating FROM "rateusers"
+	const avgRatings = await sql.query(`SELECT rating FROM "rateusers"
 	  where user_id = $1 
 	   `, [req.params.id]);
-	   console.log(avgRatings.rowCount);
-	   let num = 0;
-	   for(let i = 0; i < avgRatings.rowCount; i++){
+	console.log(avgRatings.rowCount);
+	let num = 0;
+	for (let i = 0; i < avgRatings.rowCount; i++) {
 		console.log(avgRatings.rows[i].rating);
-			num += parseInt(avgRatings.rows[i].rating);
-	   }
-	   console.log(num);
-	   let avg = (num/avgRatings.rowCount)
-	   let finalAvg = avg.toFixed(2);
-	   console.log("avg : "+finalAvg);
-	  const followers = await sql.query(`SELECT COUNT(*) AS followers FROM "followusers"
+		num += parseInt(avgRatings.rows[i].rating);
+	}
+	console.log(num);
+	let avg = (num / avgRatings.rowCount)
+	let finalAvg = avg.toFixed(2);
+	console.log("avg : " + finalAvg);
+	const followers = await sql.query(`SELECT COUNT(*) AS followers FROM "followusers"
 	 where user_id = $1 
 	  `, [req.params.id]);
 	sql.query(`SELECT *  FROM "user" WHERE  id = $1`, [req.params.id], (err, result) => {
@@ -431,7 +431,7 @@ User.AllUsers = async (req, res) => {
 			res.json({
 				message: "All User Details",
 				status: true,
-				count:userData.rows[0].count,
+				count: userData.rows[0].count,
 				result: result.rows
 			});
 		}
@@ -445,7 +445,7 @@ User.getYears = (req, res) => {
 	FROM "user" 
 	GROUP BY EXTRACT(year FROM createdat )
 	ORDER BY year `, (err, result) => {
-	if (err) {
+		if (err) {
 			console.log(err);
 			res.json({
 				message: "Try Again",
@@ -463,11 +463,33 @@ User.getYears = (req, res) => {
 
 }
 User.getAllUsers_MonthWise_count = (req, res) => {
-	sql.query(`SELECT EXTRACT(month FROM  createdat) AS month, COUNT(*) AS count
-	FROM "user"  Where EXTRACT(year FROM createdat ) = $1
-	GROUP BY EXTRACT(month FROM createdat )
-	ORDER BY month`,[req.body.year], (err, result) => {
-	if (err) {
+	sql.query(`
+	
+
+
+	SELECT months.month, COUNT(u.createdat) AS count
+FROM (
+    SELECT generate_series(1, 12) AS month
+) AS months
+LEFT JOIN "user" AS u ON EXTRACT(month FROM u.createdat) = months.month
+                      AND EXTRACT(year FROM u.createdat) = $1
+GROUP BY months.month
+ORDER BY months.month;
+	
+	`, [req.body.year], (err, result) => {
+		// for (let i = 0; i < 12; i++) {
+		// 	if (result.rows[i]) {
+		// 		console.log(result.rows[i]);
+		// 		if (result.rows[i].month !== [i]) {
+		// 			result.rows[i] = {
+		// 				month: i,
+		// 				count: "0"
+		// 			}
+		// 		}
+		// 	}
+		// }
+
+		if (err) {
 			console.log(err);
 			res.json({
 				message: "Try Again",
@@ -475,6 +497,7 @@ User.getAllUsers_MonthWise_count = (req, res) => {
 				err
 			});
 		} else {
+			console.log(result.rows);
 			res.json({
 				message: "Monthly added Users",
 				status: true,

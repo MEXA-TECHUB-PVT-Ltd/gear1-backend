@@ -8,6 +8,7 @@ module.exports = app => {
 
     router.post("/add_items", Items.Add);
     router.put("/add_item_images", upload.array('images'),  Items.addImages);
+    router.put("/edit_item_image",upload.array('image'), Items.EditImages);
 
     router.delete("/delete_items", Items.Delete);
     router.post("/get_item", Items.GetItem);
