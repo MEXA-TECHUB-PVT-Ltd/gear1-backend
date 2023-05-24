@@ -1,5 +1,6 @@
 const { sql } = require("../config/db.config");
 const schedule = require('node-schedule');
+const fs = require('fs').promises;
 
 const Items = function (Items) {
 	this.userID = Items.userID
@@ -55,7 +56,7 @@ Items.Add = async (req, res) => {
                             VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,$7,$8,$9,$10,$11,  'NOW()', 'NOW()') RETURNING * `
 						, [req.body.user_ID, [], req.body.name, req.body.price,
 						req.body.category_id, req.body.description, req.body.location, 'false'
-							, start_date,end_date, req.body.added_by], (err, result) => {
+							, start_date, end_date, req.body.added_by], (err, result) => {
 								if (err) {
 									console.log(err);
 									res.json({
@@ -126,7 +127,7 @@ Items.addImages = async (req, res) => {
 			console.log(req.files);
 			if (photo.length < 5) {
 				if (req.files.length < 6) {
-					console.log("length : " + photo.length + " req  : "+ req.files.length)
+					console.log("length : " + photo.length + " req  : " + req.files.length)
 					if (photo.length + req.files.length <= 5) {
 						let { id } = req.body;
 						if (req.files) {
@@ -255,10 +256,98 @@ Items.addImages = async (req, res) => {
 }
 
 
+Items.EditImages = async (req, res) => {
+	if (req.body.id === '') {
+		res.json({
+			message: "id is required",
+			status: false,
+		});
+	} else {
+		const userData = await sql.query(`select * from "items" where id = $1`, [req.body.id]);
+		if (userData.rowCount === 1) {
+
+			let location = req.body.location;
+			let photo = userData.rows[0].images;
+			console.log(req.files);
+			if (location > 0 || location < 4) {
+				if (req.files.length < 6) {
+					console.log("length : " + photo.length + " req  : " + req.files.length)
+					if (req.files.length === 1) {
+						let { id } = req.body;
+						if (req.files) {
+							if (userData.rows[0].images[location]) {
+								for (let i = 0; i < req.files.length; i++) {
+									fs.unlink(userData.rows[0].images[location], (err) => {
+										if (err) {
+											throw err;
+										}
+										console.log("Delete Image successfully.");
+									});
+								}
+							}
+							req.files.forEach(function (file) {
+								photo[location] = (file.path)
+							})
+						}
+						sql.query(`UPDATE "items" SET images = $1 WHERE id = $2;`,
+							[photo, req.body.id], async (err, result) => {
+								if (err) {
+									console.log(err);
+									res.json({
+										message: "Try Again",
+										status: false,
+										err
+									});
+								} else {
+									if (result.rowCount === 1) {
+										const data = await sql.query(`select * from "items" where id = $1`, [req.body.id]);
+										res.json({
+											message: "Image Images Updated Successfully!",
+											status: true,
+											result: data.rows,
+										});
+									} else if (result.rowCount === 0) {
+										res.json({
+											message: "Not Found",
+											status: false,
+										});
+									}
+								}
+							});
+					} else {
+						res.json({
+							message: "only 1 image can be update at a time",
+							status: false,
+						});
+					}
+				}
+				else {
+					res.json({
+						message: "Max 5 images allowed",
+						status: false,
+					});
+				}
+			} else {
+				res.json({
+					message: "Wrong Location for image",
+					status: false,
+				});
+			}
+		} else {
+			res.json({
+				message: "Not Found",
+				status: false,
+			});
+		}
+	}
+}
+
+
+
 Items.GetItem = async (req, res) => {
 	const liked = await sql.query(`SELECT user_id  AS likey_by FROM "likeitems"
 	 WHERE item_id = $1  `
-	, [req.body.Item_ID]);
+		, [req.body.Item_ID]);
 
 	sql.query(`SELECT * FROM "items" WHERE id = $1  `
 		, [req.body.Item_ID], (err, result) => {
@@ -379,7 +468,7 @@ Items.GetItemsByCategory = async (req, res) => {
 
 Items.search = async (req, res) => {
 	const data = await sql.query(`SELECT * FROM "categories" WHERE name ILIKE  $1 ORDER BY "createdat" DESC `
-	, [`${req.body.name}%`]);
+		, [`${req.body.name}%`]);
 	sql.query(`SELECT * FROM "items" WHERE name ILIKE  $1 ORDER BY "createdat" DESC `
 		, [`${req.body.name}%`], (err, result) => {
 			if (err) {
@@ -427,7 +516,7 @@ Items.Update = async (req, res) => {
 			const oldEnd_date = userData.rows[0].end_date;
 			const end_date = new Date(req.body.end_date);
 			const start_date = new Date(req.body.start_date);
-			let { Item_ID, name, category_id, price, description, location,promoted } = req.body;
+			let { Item_ID, name, category_id, price, description, location, promoted } = req.body;
 			if (name === undefined || name === '') {
 				name = oldName;
 			}
@@ -457,7 +546,7 @@ Items.Update = async (req, res) => {
 
 			sql.query(`UPDATE "items" SET name = $1, category_id = $2, 
 		price = $3, description = $4,location = $5, promoted = $6 , start_date = $7, end_date = $8 WHERE id = $9;`,
-				[name, category_id, price, description, location,'false', start_date, end_date, Item_ID], async (err, result) => {
+				[name, category_id, price, description, location, 'false', start_date, end_date, Item_ID], async (err, result) => {
 					if (err) {
 						end_date
 						console.log(err);

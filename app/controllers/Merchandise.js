@@ -20,6 +20,16 @@ exports.Delete = (req, res) => {
   Merchandise.Delete( req, res);
 };
 
+exports.EditImages = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Merchandise.EditImages( req, res);
+};
+
 exports.Update = (req, res) => {
   if (!req.body) {
     res.json({

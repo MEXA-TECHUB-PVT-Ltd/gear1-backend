@@ -101,11 +101,15 @@ Orders.GetAll = (req, res) => {
 
 }
 
-Orders.GetByUserID = (req, res) => {
-	sql.query(`SELECT "orders".id, "orders".ordered_at, "orders".status, "orders".createdat,
+Orders.GetByUserID = async (req, res) => {
+	const Count = await sql.query(`SELECT Count(*)  AS count FROM "orders"
+	WHERE user_id = $1 `
+	   , [req.body.user_id]);
+	sql.query(`SELECT  "orders".id, "orders".ordered_at, "orders".status, "orders".createdat,
 	"orders".updatedat, "user".username, "user".email, "user".phone,"user".country_code,
 	"merchandise".name AS Merchandise_Name , "merchandise".price,
-	 "merchandise".description AS Merchandise_description
+	 "merchandise".description AS Merchandise_description,
+	 "merchandise".images AS merchant_images
 	FROM "orders" JOIN "user" ON "orders".user_id = "user".id
 	 JOIN "merchandise"   ON  "orders".merchandise_id = "merchandise".id WHERE "orders".user_id = $1 ORDER BY "createdat" DESC `
 		, [req.body.user_id], (err, result) => {
@@ -120,6 +124,7 @@ Orders.GetByUserID = (req, res) => {
 				res.json({
 					message: "User's All orders",
 					status: true,
+					count: Count.rows[0].count,
 					result: result.rows,
 				});
 			}
