@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS public.logos (
         id SERIAL NOT NULL,
         image text,
         link text,
-		screen_id SERIAL NOT NULL,
+        screen_id SERIAL NOT NULL,
         active_status text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,

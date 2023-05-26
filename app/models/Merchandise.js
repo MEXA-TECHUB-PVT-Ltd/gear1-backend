@@ -1,4 +1,5 @@
 const { sql } = require("../config/db.config");
+const fs = require('fs').promises;
 
 const Merchandise = function (Merchandise) {
 	this.adminID = Merchandise.adminID
