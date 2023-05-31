@@ -51,8 +51,9 @@ Items.Add = async (req, res) => {
 				} else {
 					const end_date = new Date(req.body.end_date);
 					const start_date = new Date(req.body.start_date);
-					sql.query(`INSERT INTO items (id,userid ,images, name,price,category_id,description , location,
-					 promoted, start_date , end_date , added_by ,  createdAt ,updatedAt )
+					sql.query(`INSERT INTO items (id,userid ,images, name,  price,category_id,
+						description , location, promoted, start_date , end_date , 
+						added_by ,  createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,$7,$8,$9,$10,$11,  'NOW()', 'NOW()') RETURNING * `
 						, [req.body.user_ID, [], req.body.name, req.body.price,
 						req.body.category_id, req.body.description, req.body.location, 'false'
@@ -372,99 +373,433 @@ Items.GetItem = async (req, res) => {
 
 
 Items.GetLocIDItems = async (req, res) => {
-	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items" WHERE location_id = $1`, [req.body.location_id]);
-	sql.query(`SELECT * FROM "items" WHERE location_id = $1 ORDER BY "createdat" DESC `
-		, [req.body.location_id], (err, result) => {
-			if (err) {
-				console.log(err);
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				res.json({
-					message: "User's items data by location",
-					status: true,
-					count: data.rows[0].count,
-					result: result.rows,
-				});
-			}
-		});
+	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items" WHERE location= $1`, [req.body.location]);
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	result = await sql.query(`SELECT * FROM "items" WHERE location = $1 ORDER BY "createdat" DESC`, [req.body.location]);
+	if (!page && !limit) {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		const query = `SELECT * FROM "items" ORDER BY "createdat" DESC
+		 LIMIT $1 OFFSET $2`
+		result = await sql.query(query, [limit, offset]);
+	}
+	let finalResult = [];
+	let promotedData = [];
+	let normalData = [];
+	let promoted = 0;
+	let normal = 0;
+	let gap = 0;
+	for (let i = 0; i < result.rows.length; i++) {
+		if (result.rows[i].promoted === 'true') {
+			promotedData.push(result.rows[i]);
+			promoted += 1;
+			gap = 2;
+		}
+		else if (result.rows[i].promoted === 'false') {
+			normalData.push(result.rows[i]);
+			normal += 1;
+		}
 
+	}
+	const remainingData = [];
+	console.log(promoted)
+	console.log(normal)
+	promoted--;
+	normal--;
+	for (let i = 0; i < result.rows.length; i++) {
+		if (i % 3 === 2) {
+			if (promoted > -1) {
+				console.log(i);
+				finalResult.push(promotedData[promoted]);
+				promoted--;
+			} else if (normal > -1) {
+				finalResult.push(normalData[normal]);
+				normal--;
+			}
+
+		} else {
+			console.log(i);
+			if (normal > -1) {
+				finalResult.push(normalData[normal]);
+				normal--;
+			}
+		}
+	}
+	const shuffledArray = shuffleEveryThreeRows(finalResult);
+
+	if (result.rows) {
+		let finalArray = []
+		for (let i = 0; i < 10; i++) {
+			let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+			if (shuffledArray.length > number) {
+				if (req.body.page === '1') {
+					finalArray.push(shuffledArray[i])
+
+				} else {
+					let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+					console.log(number)
+					finalArray.push(shuffledArray[number])
+				}
+			}
+		}
+		//  finalArray.pop(10)
+		req.body.page
+		res.json({
+			message: "User's items data by location",
+			status: true,
+			// promoted: promotedData.length,
+			// normal: data.rows[0].count,
+			count: finalArray.length,
+			result: finalArray
+		})
+	}
+	else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
 }
 
 
-Items.GetUserItems = async (req, res) => {
-	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items" WHERE userid = $1`, [req.body.user_ID]);
-	sql.query(`SELECT * FROM "items" WHERE userid = $1 ORDER BY "createdat" DESC`
-		, [req.body.user_ID], (err, result) => {
-			if (err) {
-				console.log(err);
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				res.json({
-					message: "User's items data",
-					status: true,
-					count: data.rows[0].count,
-					result: result.rows,
-				});
-			}
-		});
+// Items.GetUserItems = async (req, res) => {
+// 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items" WHERE userid = $1`, [req.body.user_ID]);
+// 	sql.query(`SELECT * FROM "items" WHERE userid = $1 ORDER BY "createdat" DESC`
+// 		, [req.body.user_ID], (err, result) => {
+// 			if (err) {
+// 				console.log(err);
+// 				res.json({
+// 					message: "Try Again",
+// 					status: false,
+// 					err
+// 				});
+// 			} else {
+// 				res.json({
+// 					message: "User's items data",
+// 					status: true,
+// 					count: data.rows[0].count,
+// 					result: result.rows,
+// 				});
+// 			}
+// 		});
 
+// }
+
+Items.GetUserItems = async (req, res) => {
+	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items" WHERE userid= $1`, [req.body.user_ID]);
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	result = await sql.query(`SELECT * FROM "items" WHERE userid = $1 ORDER BY "createdat" DESC`, [req.body.user_ID]);
+	let finalResult = [];
+	let promotedData = [];
+	let normalData = [];
+	let promoted = 0;
+	let normal = 0;
+	let gap = 0;
+	for (let i = 0; i < result.rows.length; i++) {
+		if (result.rows[i].promoted === 'true') {
+			promotedData.push(result.rows[i]);
+			promoted += 1;
+			gap = 2;
+		}
+		else if (result.rows[i].promoted === 'false') {
+			normalData.push(result.rows[i]);
+			normal += 1;
+		}
+
+	}
+	const remainingData = [];
+	console.log(promoted)
+	console.log(normal)
+	promoted--;
+	normal--;
+	for (let i = 0; i < result.rows.length; i++) {
+		if (i % 3 === 2) {
+			if (promoted > -1) {
+				finalResult.push(promotedData[promoted]);
+				promoted--;
+			} else if (normal > -1) {
+				finalResult.push(normalData[normal]);
+				normal--;
+			}
+
+		} else {
+			if (normal > -1) {
+				finalResult.push(normalData[normal]);
+				normal--;
+			}
+		}
+	}
+	const shuffledArray = shuffleEveryThreeRows(finalResult);
+
+	if (result.rows) {
+		let finalArray = []
+		for (let i = 0; i < 10; i++) {
+			let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+			if (shuffledArray.length > number) {
+				if (req.body.page === '1') {
+					finalArray.push(shuffledArray[i])
+
+				} else {
+					let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+					console.log(number)
+					finalArray.push(shuffledArray[number])
+				}
+			}
+		}
+
+		req.body.page
+		res.json({
+			message: "User's items data",
+			status: true,
+			TotalItems: data.rows[0].count,
+			itemsPerPage: finalArray.length,
+			result: finalArray
+		})
+	}
+	else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
+}
+
+// Function to shuffle an array using the Fisher-Yates algorithm
+function shuffleArray(array) {
+	for (let i = array.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[array[i], array[j]] = [array[j], array[i]];
+	}
+}
+
+// Function to shuffle every three rows in an array
+function shuffleEveryThreeRows(array) {
+	const chunkSize = 3;
+	const chunks = [];
+
+	// Divide the array into chunks of three rows
+	for (let i = 0; i < array.length; i += chunkSize) {
+		chunks.push(array.slice(i, i + chunkSize));
+	}
+
+	// Shuffle each chunk individually
+	chunks.forEach((chunk) => {
+		shuffleArray(chunk);
+	});
+
+	// Flatten the shuffled chunks back into a single array
+	const shuffledArray = [].concat(...chunks);
+
+	return shuffledArray;
+}
+function chunkArray(arr, chunkSize) {
+    const result = [];
+    for (let i = 0; i < arr.length; i += chunkSize) {
+        result.push(arr.slice(i, i + chunkSize));
+    }
+    return result;
 }
 
 Items.GetAllItems = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items"`);
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	result = await sql.query(`SELECT * FROM "items" ORDER BY "createdat" DESC`);
+	if (!page && !limit) {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		const query = `SELECT * FROM "items" ORDER BY "createdat" DESC
+		 LIMIT $1 OFFSET $2`
+		result = await sql.query(query, [limit, offset]);
+	}
+	let finalResult = [];
+	let promotedData = [];
+	let normalData = [];
+	let promoted = 0;
+	let normal = 0;
+	let gap = 0;
+	for (let i = 0; i < result.rows.length; i++) {
+		if (result.rows[i].promoted === 'true') {
+			promotedData.push(result.rows[i]);
+			promoted += 1;
+			gap = 2;
+		}
+		else if (result.rows[i].promoted === 'false') {
+			normalData.push(result.rows[i]);
+			normal += 1;
+		}
 
-	sql.query(`SELECT * FROM "items" ORDER BY "createdat" DESC `
-		, (err, result) => {
-			if (err) {
-				console.log(err);
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				res.json({
-					message: "User's items data",
-					status: true,
-					count: data.rows[0].count,
-					result: result.rows,
-				});
+	}
+	const remainingData = [];
+	promoted--;
+	normal--;
+	for (let i = 0; i < result.rows.length; i++) {
+		if (i % 3 === 2) {
+			if (promoted > -1) {
+				console.log(i);
+				finalResult.push(promotedData[promoted]);
+				promoted--;
+			} else if (normal > -1) {
+				finalResult.push(normalData[normal]);
+				normal--;
 			}
-		});
 
+		} else {
+			if (normal > -1) {
+				finalResult.push(normalData[normal]);
+				normal--;
+			}
+		}
+	}
+
+	const shuffledArray = shuffleEveryThreeRows(finalResult);
+
+
+	if (result.rows) {
+		let finalArray = []
+		// let loc  = 0;
+		// let locArray = [];
+		for (let i = 0; i < 10; i++) {
+			let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+			if (shuffledArray.length > number) {
+				// if(i === loc ){
+				// 	locArray[0] =  finalResult[i];
+				// 	finalResult[i] = finalResult[i+1] 
+				// 	finalResult[i+1] = locArray[0];
+				// 	loc += 2
+
+				// }
+				if (req.body.page === '1') {
+					finalArray.push(shuffledArray[i])
+
+				} else {
+					let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+					finalArray.push(shuffledArray[number])
+				}
+			}
+		}
+		//  finalArray.pop(10)
+		// var defaultsettings = new Object();
+		// defaultsettings =
+		// var ajaxsettings = new Object();
+		// ajaxsettings:{
+		// 	...defaultsettings
+		// }
+		const chunkedArray = chunkArray(finalArray, 3);
+		console.log(chunkedArray);
+
+		// let obj1 = new Object();
+		// obj1.assign(chunkedArray[0]);
+		// req.body.page
+		res.json({
+			message: "User's items data",
+			status: true,
+			// promoted: promotedData.length,
+			// normal: normalData.length,
+			count: finalArray.length,
+			result:  chunkedArray
+			// {
+			// 	obj1,
+			// 	obj2,
+			// 	obj3,
+			// 	obj4
+			// }
+		})
+	}
+	else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
 }
+
 
 Items.GetItemsByCategory = async (req, res) => {
-	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items" WHERE category_id = $1`, [req.body.category_ID]);
-	sql.query(`SELECT * FROM "items" WHERE category_id = $1 ORDER BY "createdat" DESC `
-		, [req.body.category_ID], (err, result) => {
-			if (err) {
-				console.log(err);
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				res.json({
-					message: "Category's items data",
-					status: true,
-					count: data.rows[0].count,
-					result: result.rows,
-				});
+	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items" WHERE category_id= $1`, [req.body.category_ID]);
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	result = await sql.query(`SELECT * FROM "items" WHERE category_id = $1 ORDER BY "createdat" DESC`, [req.body.category_ID]);
+	let finalResult = [];
+	let promotedData = [];
+	let normalData = [];
+	let promoted = 0;
+	let normal = 0;
+	let gap = 0;
+	for (let i = 0; i < result.rows.length; i++) {
+		if (result.rows[i].promoted === 'true') {
+			promotedData.push(result.rows[i]);
+			promoted += 1;
+			gap = 2;
+		}
+		else if (result.rows[i].promoted === 'false') {
+			normalData.push(result.rows[i]);
+			normal += 1;
+		}
+
+	}
+	const remainingData = [];
+	console.log(promoted)
+	console.log(normal)
+	promoted--;
+	normal--;
+	for (let i = 0; i < result.rows.length; i++) {
+		if (i % 3 === 2) {
+			if (promoted > -1) {
+				finalResult.push(promotedData[promoted]);
+				promoted--;
+			} else if (normal > -1) {
+				finalResult.push(normalData[normal]);
+				normal--;
 			}
-		});
 
+		} else {
+			if (normal > -1) {
+				finalResult.push(normalData[normal]);
+				normal--;
+			}
+		}
+	}
+	const shuffledArray = shuffleEveryThreeRows(finalResult);
+
+	if (result.rows) {
+		let finalArray = []
+		for (let i = 0; i < 10; i++) {
+			let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+			if (shuffledArray.length > number) {
+				if (req.body.page === '1') {
+					finalArray.push(shuffledArray[i])
+
+				} else {
+					let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+					console.log(number)
+					finalArray.push(shuffledArray[number])
+				}
+			}
+		}
+		//  finalArray.pop(10)
+		req.body.page
+		res.json({
+			message: "Category's items data",
+			status: true,
+			TotalItems: data.rows[0].count,
+			itemsPerPage: finalArray.length,
+			result: finalArray
+		})
+	}
+	else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
 }
-
 
 Items.search = async (req, res) => {
 	const data = await sql.query(`SELECT * FROM "categories" WHERE name ILIKE  $1 ORDER BY "createdat" DESC `

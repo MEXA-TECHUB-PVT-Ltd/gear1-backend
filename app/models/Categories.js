@@ -1,4 +1,4 @@
-const {sql} = require("../config/db.config");
+const { sql } = require("../config/db.config");
 
 const Categories = function (Categories) {
 	this.name = Categories.name;
@@ -29,7 +29,7 @@ Categories.Add = async (req, res) => {
 			} else {
 				sql.query(`INSERT INTO "categories" (id, name , createdAt ,updatedAt )
                             VALUES (DEFAULT, $1 , 'NOW()', 'NOW()') 
-							RETURNING * `,[req.body.name], (err, result) => {
+							RETURNING * `, [req.body.name], (err, result) => {
 					if (err) {
 						console.log(err);
 						res.json({
@@ -109,7 +109,7 @@ Categories.addImage = async (req, res) => {
 }
 
 
-Categories.GetCategories  = (req, res) => {
+Categories.GetCategories = (req, res) => {
 	sql.query(`SELECT * FROM "categories" WHERE id = ${req.body.Category_ID};`, (err, result) => {
 		if (err) {
 			res.json({
@@ -129,27 +129,112 @@ Categories.GetCategories  = (req, res) => {
 
 Categories.GetAllCategories = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "categories"`);
-	sql.query(`SELECT * FROM "categories" ORDER BY "createdat" DESC ;`, (err, result) => {
-		if (err) {
-			res.json({
-				message: "Try Again",
-				status: false,
-				err
-			});
-		} else {
-			// result.rows.push({
-			// 	count:
-			// 		data.rows[0].count
-			// });
-			res.json({
-				message: "All categories Details",
-				status: true,
-				count:
-					data.rows[0].count,
-				result: result.rows,
-			});
+	const Tads = await sql.query(`SELECT COUNT(*) AS count FROM "ads"`);
+
+	let limit = 12;
+	let limit1;
+	let page = req.body.page;
+	let category;
+	let ads;
+	if (!page || !limit) {
+		category = await sql.query(`SELECT * FROM "categories" ORDER BY "createdat" DESC`);
+	}
+	if (page && limit) {
+		const data = await sql.query(`SELECT COUNT(*) AS count FROM "categories"`);
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		category = await sql.query(`SELECT * FROM "categories" ORDER BY "createdat" DESC
+		LIMIT $1 OFFSET $2 ` , [limit, offset]);
+	}
+	for (let i = 0; i < category.rowCount; i++) {
+		category.rows[i] = {
+			...category.rows[i],
+			type: 'category'
 		}
-	});
+	}
+	if (category.rowCount !== 12) {
+		limit1 = parseInt(12 - parseInt(category.rowCount));
+		let offset = (parseInt(page) - 1) * limit;
+		ads = await sql.query(`SELECT * FROM "ads" ORDER BY "createdat" DESC
+		LIMIT $1 OFFSET $2 ` , [limit1, req.body.AdsOffset]);
+		console.log("ads.rowCount");
+		console.log(ads.rowCount);
+		if (category.rowCount > 0) {
+			if (ads.rowCount > 0) {
+				ads.rows[0] = {
+					...ads.rows[0],
+					type: 'ad'
+				}
+				category.rows.splice(0, 0, ads.rows[0]);
+			}
+		}
+		if (category.rowCount > 7) {
+			if (ads.rowCount === 2) {
+				ads.rows[1] = {
+					...ads.rows[1],
+					type: 'ad'
+				}
+				category.rows.splice(6, 0, ads.rows[1]);
+			}
+		} else {
+			let j = category.rowCount + 1
+			for (let i = 1; i < ads.rowCount; i++) {
+				ads.rows[i] = {
+					...ads.rows[i],
+					type: 'ad'
+				}
+				category.rows.splice(j, 0, ads.rows[i]);
+				j++;
+			}
+		}
+		if (category.rowCount > 7 && category.rowCount < 12) {
+			let j = category.rowCount + 1
+			for (let i = 1; i < ads.rowCount; i++) {
+				ads.rows[i] = {
+					...ads.rows[i],
+					type: 'ad'
+				}
+				category.rows.splice(j, 0, ads.rows[i]);
+				j++;
+			}
+		}
+	} else if (category.rowCount === 12) {
+		limit1 = 2;
+		let offset = (parseInt(page) - 1) * limit1
+		ads = await sql.query(`SELECT * FROM "ads" ORDER BY "createdat" DESC
+		LIMIT $1 OFFSET $2 ` , [limit1, offset]);
+		if (ads.rowCount > 0) {
+			ads.rows[0] = {
+				...ads.rows[0],
+				type: 'ad'
+			}
+			category.rows.splice(0, 0, ads.rows[0]);
+		}
+		if (ads.rowCount === 2) {
+			ads.rows[1] = {
+				...ads.rows[1],
+				type: 'ad'
+			}
+			category.rows.splice(7, 0, ads.rows[1]);
+		}
+
+	}
+	if (category.rows) {
+		res.json({
+			message: "All categories Details",
+			status: true,
+			totalAds: Tads.rows[0].count,
+			InpageAds: ads.rowCount,
+			TotalCatagory: data.rows[0].count,
+			InPageCategories: category.rowCount,
+			result: category.rows,
+		});
+	} else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
 
 }
 
