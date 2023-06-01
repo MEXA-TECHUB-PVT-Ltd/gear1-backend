@@ -33,7 +33,7 @@ admin.create = async (req, res) => {
 				});
 			} else {
 				const check = (`SELECT * FROM "admin" WHERE email = $1`);
-				const checkResult = await sql.query(check,[req.body.email]);
+				const checkResult = await sql.query(check, [req.body.email]);
 				if (checkResult.rows.length > 0) {
 					res.json({
 						message: "admin Already Exists",
@@ -42,11 +42,11 @@ admin.create = async (req, res) => {
 				} else if (checkResult.rows.length === 0) {
 					const salt = await bcrypt.genSalt(10);
 					let hashpassword = await bcrypt.hash(req.body.password, salt);
-					const { name, email} = req.body;
+					const { name, email } = req.body;
 					const query = `INSERT INTO "admin" (id,email,password  , createdat ,updatedat )
                             VALUES (DEFAULT, $1, $2, 'NOW()' ,'NOW()' ) RETURNING * `;
 					const foundResult = await sql.query(query,
-						[ email, hashpassword]);
+						[email, hashpassword]);
 					if (foundResult.rows.length > 0) {
 						if (err) {
 							res.json({
@@ -101,7 +101,7 @@ admin.login = async function (req, res) {
 				if (bcrypt.compareSync(req.body.password, result.rows[0].password)) {
 
 
-					
+
 					const token = jwt.sign({ id: result.rows[0].id }, 'IhTRsIsUwMyHAmKsA', {
 						expiresIn: "7d",
 					});
@@ -137,7 +137,7 @@ admin.GetAllUser = async (req, res) => {
 			res.json({
 				message: "admin Details",
 				status: true,
-				count:userData.rows[0].count,
+				count: userData.rows[0].count,
 				result: result.rows
 			});
 		}
@@ -153,16 +153,16 @@ admin.BlockUnblockUser = async (req, res) => {
 	} else {
 		const data = await sql.query(`select * from "user" where id = $1`, [req.body.id]);
 		console.log(data.rows[0].status);
-		if(data.rowCount === 1){
-			if(data.rows[0].status === 'block'){
-				sql.query(`UPDATE "user" SET status = $1 WHERE id = $2;`, [ 'unblock', req.body.id], async (err, result) => {
+		if (data.rowCount === 1) {
+			if (data.rows[0].status === null) {
+				sql.query(`UPDATE "user" SET status = $1 WHERE id = $2;`, ['block', req.body.id], async (err, result) => {
 					if (err) {
 						res.json({
 							message: "Try Again",
 							status: false,
 							err
 						});
-					} else 
+					} else
 						if (result.rowCount === 1) {
 							const data = await sql.query(`select * from "user" where id = $1`, [req.body.id]);
 							res.json({
@@ -177,7 +177,30 @@ admin.BlockUnblockUser = async (req, res) => {
 							});
 						}
 				});
-			}else if(data.rows[0].status === 'unblock'){
+			} else if (data.rows[0].status === 'block') {
+				sql.query(`UPDATE "user" SET status = $1 WHERE id = $2;`, ['unblock', req.body.id], async (err, result) => {
+					if (err) {
+						res.json({
+							message: "Try Again",
+							status: false,
+							err
+						});
+					} else
+						if (result.rowCount === 1) {
+							const data = await sql.query(`select * from "user" where id = $1`, [req.body.id]);
+							res.json({
+								message: "User Updated Successfully!",
+								status: true,
+								result: data.rows,
+							});
+						} else if (result.rowCount === 0) {
+							res.json({
+								message: "Not Found",
+								status: false,
+							});
+						}
+				});
+			} else if (data.rows[0].status === 'unblock') {
 				sql.query(`UPDATE "user" SET status = $1 WHERE id = $2;`, ['block', req.body.id], async (err, result) => {
 					if (err) {
 						res.json({
@@ -201,9 +224,9 @@ admin.BlockUnblockUser = async (req, res) => {
 						}
 					}
 				});
-		
+
 			}
-		}else{
+		} else {
 			res.json({
 				message: "Not Found",
 				status: false,
@@ -360,7 +383,7 @@ admin.updateProfile = async (req, res) => {
 			// let image = userData.rows[0].image;
 			// let cover_image = userData.rows[0].cover_image;
 
-			let { id, email} = req.body;
+			let { id, email } = req.body;
 			// if (req.file) {
 			// 	const { path } = req.file;
 			// 	photo = path;
@@ -379,7 +402,7 @@ admin.updateProfile = async (req, res) => {
 			// 	country_code = oldCountry_code;
 			// }
 			sql.query(`UPDATE "admin" SET  email = $1  WHERE id = $2;`,
-				[ email, id], async (err, result) => {
+				[email, id], async (err, result) => {
 					if (err) {
 						console.log(err);
 						res.json({
