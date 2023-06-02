@@ -127,6 +127,8 @@ Categories.GetCategories = (req, res) => {
 	});
 }
 
+
+
 Categories.GetAllCategories = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "categories"`);
 	const Tads = await sql.query(`SELECT COUNT(*) AS count FROM "ads"`);
@@ -146,6 +148,7 @@ Categories.GetAllCategories = async (req, res) => {
 		category = await sql.query(`SELECT * FROM "categories" ORDER BY "createdat" DESC
 		LIMIT $1 OFFSET $2 ` , [limit, offset]);
 	}
+	let rowCount = category.rowCount;
 	for (let i = 0; i < category.rowCount; i++) {
 		category.rows[i] = {
 			...category.rows[i],
@@ -153,8 +156,7 @@ Categories.GetAllCategories = async (req, res) => {
 		}
 	}
 	if (category.rowCount !== 12) {
-		limit1 = parseInt(12 - parseInt(category.rowCount));
-		let offset = (parseInt(page) - 1) * limit;
+		limit1 = parseInt(14 - parseInt(category.rowCount));
 		ads = await sql.query(`SELECT * FROM "ads" ORDER BY "createdat" DESC
 		LIMIT $1 OFFSET $2 ` , [limit1, req.body.AdsOffset]);
 		console.log("ads.rowCount");
@@ -166,30 +168,33 @@ Categories.GetAllCategories = async (req, res) => {
 					type: 'ad'
 				}
 				category.rows.splice(0, 0, ads.rows[0]);
+				rowCount++;
 			}
 		}
 		if (category.rowCount > 7) {
-			if (ads.rowCount === 2) {
+			if (ads.rowCount > 2) {
 				ads.rows[1] = {
 					...ads.rows[1],
 					type: 'ad'
 				}
-				category.rows.splice(6, 0, ads.rows[1]);
+				category.rows.splice(7, 0, ads.rows[1]);
+				rowCount++;
 			}
 		} else {
-			let j = category.rowCount + 1
-			for (let i = 1; i < ads.rowCount; i++) {
+			let j = category.rowCount 
+			for (let i = 0; i <= ads.rowCount-1; i++) {
 				ads.rows[i] = {
 					...ads.rows[i],
 					type: 'ad'
 				}
-				category.rows.splice(j, 0, ads.rows[i]);
+				category.rows.splice(i, 0, ads.rows[i]);
 				j++;
+				rowCount++;
 			}
 		}
 		if (category.rowCount > 7 && category.rowCount < 12) {
-			let j = category.rowCount + 1
-			for (let i = 1; i < ads.rowCount; i++) {
+			let j = rowCount;
+			for (let i = 2; i < ads.rowCount; i++) {
 				ads.rows[i] = {
 					...ads.rows[i],
 					type: 'ad'
@@ -198,6 +203,7 @@ Categories.GetAllCategories = async (req, res) => {
 				j++;
 			}
 		}
+
 	} else if (category.rowCount === 12) {
 		limit1 = 2;
 		let offset = (parseInt(page) - 1) * limit1
@@ -219,6 +225,7 @@ Categories.GetAllCategories = async (req, res) => {
 		}
 
 	}
+	
 	if (category.rows) {
 		res.json({
 			message: "All categories Details",
