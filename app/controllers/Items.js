@@ -1,5 +1,4 @@
 const Items = require("../models/Items");
-
 // Create and Save a new Admin
 exports.Add = (req, res) => {
   if (!req.body) {
@@ -19,7 +18,15 @@ exports.Delete = (req, res) => {
   }  
   Items.Delete( req, res);
 };
-
+exports.GetAllItems_Admin = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Items.GetAllItems_Admin( req, res);
+};
 exports.EditImages = (req, res) => {
   if (!req.body) {
     res.json({
@@ -29,7 +36,6 @@ exports.EditImages = (req, res) => {
   }  
   Items.EditImages( req, res);
 };
-
 exports.GetLocIDItems = (req, res) => {
   if (!req.body) {
     res.json({
@@ -39,8 +45,6 @@ exports.GetLocIDItems = (req, res) => {
   }  
   Items.GetLocIDItems( req, res);
 };
-
-
 exports.Update = (req, res) => {
   if (!req.body) {
     res.json({
@@ -50,7 +54,6 @@ exports.Update = (req, res) => {
   }  
   Items.Update( req, res);
 };
-
 exports.GetItem = (req, res) => {
   if (!req.body) {
     res.json({
@@ -60,7 +63,6 @@ exports.GetItem = (req, res) => {
   }  
   Items.GetItem( req, res);
 };
-
 exports.GetUserItems = (req, res) => {
   if (!req.body) {
     res.json({
@@ -70,7 +72,6 @@ exports.GetUserItems = (req, res) => {
   }  
   Items.GetUserItems( req, res);
 };
-
 exports.GetAllItems = (req, res) => {
   if (!req.body) {
     res.json({
@@ -80,7 +81,6 @@ exports.GetAllItems = (req, res) => {
   }  
   Items.GetAllItems( req, res);
 };
-
 exports.GetItemsByCategory = (req, res) => {
   if (!req.body) {
     res.json({
@@ -90,7 +90,6 @@ exports.GetItemsByCategory = (req, res) => {
   }  
   Items.GetItemsByCategory( req, res);
 };
-
 exports.addImages = (req, res) => {
   if (!req.body) {
     res.json({
@@ -100,7 +99,6 @@ exports.addImages = (req, res) => {
   }  
   Items.addImages( req, res);
 };
-
 exports.search = (req, res) => {
   if (!req.body) {
     res.json({

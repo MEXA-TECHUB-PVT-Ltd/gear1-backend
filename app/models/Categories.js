@@ -127,6 +127,34 @@ Categories.GetCategories = (req, res) => {
 	});
 }
 
+Categories.GetAll_only_Categories = async (req, res) => {
+	const data = await sql.query(`SELECT COUNT(*) AS count FROM "categories"`);
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	if (!page || !limit) {
+		result = await sql.query(`SELECT * FROM "categories" ORDER by createdat DESC `);
+	}
+	if (page && limit) {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		result = await sql.query(`SELECT * FROM "categories" ORDER by createdat DESC 
+		LIMIT $1 OFFSET $2 ` , [limit, offset]);
+	}
+	if (result.rows) {
+		res.json({
+			message: "categories Details",
+			status: true,
+			count: data.rows[0].count,
+			result: result.rows,
+		});
+	} else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
+}
 
 
 Categories.GetAllCategories = async (req, res) => {

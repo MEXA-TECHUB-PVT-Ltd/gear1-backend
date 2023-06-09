@@ -54,6 +54,7 @@ require("./app/routes/Location")(app);
 require("./app/routes/DailyDeals")(app);
 require("./app/routes/Orders")(app);
 require("./app/routes/Logos")(app);
+require("./app/routes/image_cache")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3006;

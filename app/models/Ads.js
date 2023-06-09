@@ -2,6 +2,7 @@ const { sql } = require("../config/db.config");
 
 const ads = function (ads) {
 	this.image = ads.image
+	this.ad_name= ads.ad_name
 	this.link = ads.link;
 	this.screen_id = ads.screen_id;
 	this.active_status = ads.active_status;
@@ -19,6 +20,7 @@ ads.Add = async (req, res) => {
 		sql.query(`CREATE TABLE IF NOT EXISTS public.ads (
         id SERIAL NOT NULL,
         image text,
+		ad_name text,
         link text,
 		screen_id SERIAL NOT NULL,
         active_status text,
@@ -32,9 +34,9 @@ ads.Add = async (req, res) => {
 					err
 				});
 			} else {
-				sql.query(`INSERT INTO ads (id , link, screen_id, active_status, createdAt ,updatedAt )
-                            VALUES (DEFAULT, $1  ,  $2, $3 ,  'NOW()', 'NOW()') RETURNING * `
-					, [req.body.link, req.body.screen_id, 'active'], (err, result) => {
+				sql.query(`INSERT INTO ads (id ,ad_name, link, screen_id, active_status, createdAt ,updatedAt )
+                            VALUES (DEFAULT, $1  ,  $2, $3 ,$4,  'NOW()', 'NOW()') RETURNING * `
+					, [ req.body.ad_name,req.body.link, req.body.screen_id, 'active'], (err, result) => {
 						if (err) {
 							console.log(err);
 							res.json({
@@ -197,85 +199,125 @@ ads.Get = (req, res) => {
 
 ads.GetAll = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "ads"`)
-	sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
-	ON "ads".screen_id = "screens".id ORDER BY "createdat" DESC ;`, (err, result) => {
-		if (err) {
-			console.log(err);
-			res.json({
-				message: "Try Again",
-				status: false,
-				err
-			});
-		} else {
-			// result.rows.push({
-			// 	allads:
-			// 		data.rows[0].allads
-			// });
-			res.json({
-				message: "Ad's Data",
-				status: true,
-				count:data.rows[0].allads,
-				result: result.rows,
-			});
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	if (!page || !limit) {
+		result = await sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
+		ON "ads".screen_id = "screens".id ORDER BY "createdat" DESC`);
+	}
+	if (page && limit) {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		result = await sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
+		ON "ads".screen_id = "screens".id ORDER BY "createdat" DESC
+		LIMIT $1 OFFSET $2 ` , [ limit, offset]);
+	}
+	if (result.rowCount > 0) {
+		for (let i = 0; i < result.rowCount; i++) {
+			result.rows[i] = {
+				...result.rows[i],
+				type: 'ad'
+			}
 		}
-	});
-
+	}
+	if (result.rows) {
+		res.json({
+			message: "Ad's Data",
+			status: true,
+			count: data.rows[0].count,
+			result: result.rows,
+		});
+	} else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
 }
 
 ads.GetByScreen = async (req, res) => {
-
 	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "ads" where screen_id = $1 `,
 		[req.body.screen_id])
-	sql.query(`SELECT *  FROM "ads" where screen_id = $1 `,
-		[req.body.screen_id], (err, result) => {
-			if (err) {
-				console.log(err);
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				// result.rows.push({
-				// 	allads:
-				// 		data.rows[0].allads
-				// });
-				res.json({
-					message: "Ad's Data by Screen",
-					status: true,
-					allads_Screen: data.rows[0].allads,
-					result: result.rows,
-				});
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	if (!page || !limit) {
+		result = await sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
+		ON "ads".screen_id = "screens".id where screen_id = $1 ORDER BY "createdat" DESC `,
+		[req.body.screen_id]);
+	}
+	if (page && limit) {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		result = await sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
+		ON "ads".screen_id = "screens".id where screen_id = $1 ORDER BY "createdat" DESC
+		LIMIT $2 OFFSET $3 ` , [req.body.screen_id, limit, offset]);
+	}
+	if (result.rowCount > 0) {
+		for (let i = 0; i < result.rowCount; i++) {
+			result.rows[i] = {
+				...result.rows[i],
+				type: 'ad'
 			}
-		});
+		}
+	}
 
+	if (result.rows) {
+		res.json({
+			message: "Ad's Data by Screen",
+			status: true,
+			count: data.rows[0].count,
+			result: result.rows,
+		});
+	} else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
 }
 
 ads.GetActiveByScreen = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "ads" 
 	WHERE screen_id = $1 AND active_status = $2`, [req.body.screen_id, 'active'])
-	sql.query(`SELECT *  FROM "ads" WHERE screen_id = $1 AND active_status = $2`
-		, [req.body.screen_id, 'active'], (err, result) => {
-			if (err) {
-				console.log(err);
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				result.rows.push({
 
-				});
-				res.json({
-					message: "Active Ad's Data by Screen",
-					status: true,
-					Active_ads: data.rows[0].allads,
-					result: result.rows,
-				});
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	if (!page || !limit) {
+		result = await sql.query(`SELECT *  FROM "ads" WHERE screen_id = $1 AND active_status = $2`
+		, [req.body.screen_id, 'active']);
+	}
+	if (page && limit) {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		result = await sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
+		ON "ads".screen_id = "screens".id WHERE screen_id = $1 AND active_status = $2 ORDER BY "createdat" DESC
+		LIMIT $3 OFFSET $4 ` , [req.body.screen_id, 'active' ,limit, offset]);
+	}
+	if (result.rowCount > 0) {
+		for (let i = 0; i < result.rowCount; i++) {
+			result.rows[i] = {
+				...result.rows[i],
+				type: 'ad'
 			}
-		});
+		}
+	}
 
+	if (result.rows) {
+		res.json({
+			message: "Active Ad's Data by Screen",
+			status: true,
+			count: data.rows[0].count,
+			result: result.rows,
+		});
+	} else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
 }
 
 
@@ -290,15 +332,22 @@ ads.Update = async (req, res) => {
 		 where id = $1 `, [req.body.adID]);
 
 		if (userData.rowCount === 1) {
-
 			const oldLink = userData.rows[0].link;
+			const oldAd_name = userData.rows[0].ad_name;
 			const oldScreen = userData.rows[0].screen_id;
 			const oldActive_status = userData.rows[0].active_status;
 
-			let { adID, link, screen_id, active_status } = req.body;
+			let { adID, ad_name,link, screen_id, active_status } = req.body;
 			if (link === undefined || link === '') {
 				link = oldLink;
 			}
+			if (ad_name === undefined || ad_name === '') {
+				ad_name = oldAd_name;
+			}
+			if (active_status === undefined || active_status === '') {
+				active_status = oldActive_status;
+			}
+
 			if (active_status === undefined || active_status === '') {
 				active_status = oldActive_status;
 			}

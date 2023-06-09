@@ -13,6 +13,7 @@ module.exports = app => {
     router.delete("/delete_category/:id", Categories.Delete);
     router.post("/get_category", Categories.GetCategories);
     router.post("/get_all_category", Categories.GetAllCategories);
+    router.post("/GetAll_only_Categories", Categories.GetAll_only_Categories);
 
     app.use("/category", router);
 };
