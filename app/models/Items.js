@@ -597,12 +597,49 @@ function shuffleEveryThreeRows(array) {
 	return shuffledArray;
 }
 function chunkArray(arr, chunkSize) {
-    const result = [];
-    for (let i = 0; i < arr.length; i += chunkSize) {
-        result.push(arr.slice(i, i + chunkSize));
-    }
-    return result;
+	const result = {};
+	let j  = 0;
+	for (let i = 0; i < arr.length; i += chunkSize) {
+		result[j] = 
+			arr.slice(i, i + chunkSize)
+			j++;
+	}
+	return result;
 }
+
+
+
+
+Items.GetAllItems_Admin = async (req, res) => {
+	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items"`);
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	result = await sql.query(`SELECT * FROM "items" ORDER BY "createdat" DESC`);
+	if (!page && !limit) {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		const query = `SELECT * FROM "items" ORDER BY "createdat" DESC
+		 LIMIT $1 OFFSET $2`
+		result = await sql.query(query, [limit, offset]);
+	}
+	if (result.rows) {
+		res.json({
+			message: "User's items data",
+			status: true,
+			count:data.rows[0].count,
+			result: result.rows
+		})
+	}
+	else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
+}
+
+
 
 Items.GetAllItems = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items"`);
@@ -702,7 +739,7 @@ Items.GetAllItems = async (req, res) => {
 			// promoted: promotedData.length,
 			// normal: normalData.length,
 			count: finalArray.length,
-			result:  chunkedArray
+			result: chunkedArray
 			// {
 			// 	obj1,
 			// 	obj2,
@@ -718,8 +755,6 @@ Items.GetAllItems = async (req, res) => {
 		})
 	}
 }
-
-
 Items.GetItemsByCategory = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items" WHERE category_id= $1`, [req.body.category_ID]);
 	let limit = '10';

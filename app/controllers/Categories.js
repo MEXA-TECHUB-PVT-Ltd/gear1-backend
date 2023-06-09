@@ -28,7 +28,15 @@ exports.Update = (req, res) => {
   }  
   Categories.Update( req, res);
 };
-
+exports.GetAll_only_Categories = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Categories.GetAll_only_Categories( req, res);
+};
 exports.Delete= (req, res) => {
   if (!req.body) {
     res.json({

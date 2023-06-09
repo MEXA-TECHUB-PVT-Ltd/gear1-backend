@@ -95,11 +95,11 @@ Follow.Follow = async (req, res) => {
 				} else {
 					const isFollow = await sql.query(`SELECT * FROM "followusers" where user_id = $1 
 					AND follow_by_user_id = $2
-					 `, [req.body.user_ID, req.body.follow_by_user_id]);
+					 `, [req.body.user_ID, req.body.follow_by_user_ID]);
 					if (isFollow.rowCount > 0) {
 						sql.query(`DELETE FROM "followusers" where user_id = $1 
 						AND follow_by_user_id = $2
-						 `, [req.body.user_ID, req.body.follow_by_user_id], (err, result) => {
+						 `, [req.body.user_ID, req.body.follow_by_user_ID], (err, result) => {
 							if (err) {
 								res.json({
 									message: "Try Again",
@@ -187,60 +187,81 @@ Follow.Follow = async (req, res) => {
 }
 
 Follow.GetFollowers = async (req, res) => {
-	const user = await sql.query(`SELECT COUNT(*) AS count FROM "followusers"
+	const data = await sql.query(`SELECT COUNT(*) AS count FROM "followusers"
 	 where user_id = $1 
 	  `, [req.body.user_ID]);
 
-	sql.query(`SELECT "user".username, "user".email , "user".phone,
-	"user".country_code, "user".image AS User_Image ,"user".cover_image
-	 AS Cover_Image  FROM "followusers" JOIN "user" 
-	ON "followusers".follow_by_user_id = "user".id where "followusers".user_id = $1;`
-		, [req.body.user_ID], (err, result) => {
-			if (err) {
-				console.log(err);
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				res.json({
-					message: "User's Followers List",
-					status: true,
-					totalFollowers: user.rows[0].count,
-					result: result.rows,
-				});
-			}
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	if (!page || !limit) {
+		result = await sql.query(`SELECT "user".id ,"user".username, "user".email , "user".phone,
+		"user".country_code, "user".image AS User_Image ,"user".cover_image
+		 AS Cover_Image  FROM "followusers" JOIN "user" 
+		ON "followusers".follow_by_user_id = "user".id where "followusers".user_id = $1 ORDER BY "followusers".createdat DESC`  , [req.body.user_ID]);
+	}
+	if (page && limit) {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		result = await sql.query(`SELECT "user".id ,"user".username, "user".email , "user".phone,
+		"user".country_code, "user".image AS User_Image ,"user".cover_image
+		 AS Cover_Image  FROM "followusers" JOIN "user" 
+		ON "followusers".follow_by_user_id = "user".id where "followusers".user_id = $1 ORDER BY "followusers".createdat DESC
+		LIMIT $2 OFFSET $3 ` , [req.body.user_ID, limit, offset]);
+	}
+	if (result.rows) {
+		res.json({
+			message: "User's Followers List",
+			status: true,
+			totalFollowings: data.rows[0].count,
+			result: result.rows,
 		});
+	} else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
+
 
 }
 
 Follow.GetFollowings = async (req, res) => {
-	const user = await sql.query(`SELECT COUNT(*) AS count FROM "followusers"
+	const data = await sql.query(`SELECT COUNT(*) AS count FROM "followusers"
 	where follow_by_user_id = $1 
 	 `, [req.body.user_ID]);
-	sql.query(`SELECT  "user".username, "user".email , "user".phone,
-	"user".country_code, "user".image AS User_Image ,"user".cover_image
-	 AS Cover_Image FROM "followusers" JOIN "user" 
-	ON "followusers".user_id = "user".id where "followusers".follow_by_user_id = $1;`
-		, [req.body.user_ID], (err, result) => {
-			if (err) {
-				console.log(err);
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				res.json({
-					message: "User's Following List",
-					status: true,
-					totalFollowings: user.rows[0].count,
-					result: result.rows,
-				});
-			}
-		});
 
+	let limit = '10';
+	let page = req.body.page;
+	let result;
+	if (!page || !limit) {
+		result = await sql.query(`SELECT "user".id, "user".username, "user".email , "user".phone,
+		"user".country_code, "user".image AS User_Image ,"user".cover_image
+		 AS Cover_Image FROM "followusers" JOIN "user" 
+		ON "followusers".user_id = "user".id where "followusers".follow_by_user_id = $1 ORDER BY "followusers".createdat DESC`  , [req.body.user_ID]);
+	}
+	if (page && limit) {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		result = await sql.query(`SELECT "user".id, "user".username, "user".email , "user".phone,
+		"user".country_code, "user".image AS User_Image ,"user".cover_image
+		 AS Cover_Image FROM "followusers" JOIN "user" 
+		ON "followusers".user_id = "user".id where "followusers".follow_by_user_id = $1 ORDER BY "followusers".createdat DESC
+		LIMIT $2 OFFSET $3 ` , [req.body.user_ID, limit, offset]);
+	}
+	if (result.rows) {
+		res.json({
+			message: "User's Following List",
+			status: true,
+			totalFollowings: data.rows[0].count,
+			result: result.rows,
+		});
+	} else {
+		res.json({
+			message: "could not fetch",
+			status: false
+		})
+	}
 }
 
 
