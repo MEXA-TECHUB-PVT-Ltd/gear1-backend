@@ -489,82 +489,162 @@ Items.GetLocIDItems = async (req, res) => {
 
 Items.GetUserItems = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items" WHERE userid= $1`, [req.body.user_ID]);
-	let limit = '10';
+	let limit = req.body.limit;
 	let page = req.body.page;
 	let result;
-	result = await sql.query(`SELECT * FROM "items" WHERE userid = $1 ORDER BY "createdat" DESC`, [req.body.user_ID]);
-	let finalResult = [];
-	let promotedData = [];
-	let normalData = [];
-	let promoted = 0;
-	let normal = 0;
-	let gap = 0;
-	for (let i = 0; i < result.rows.length; i++) {
-		if (result.rows[i].promoted === 'true') {
-			promotedData.push(result.rows[i]);
-			promoted += 1;
-			gap = 2;
-		}
-		else if (result.rows[i].promoted === 'false') {
-			normalData.push(result.rows[i]);
-			normal += 1;
-		}
-
-	}
-	const remainingData = [];
-	console.log(promoted)
-	console.log(normal)
-	promoted--;
-	normal--;
-	for (let i = 0; i < result.rows.length; i++) {
-		if (i % 3 === 2) {
-			if (promoted > -1) {
-				finalResult.push(promotedData[promoted]);
-				promoted--;
-			} else if (normal > -1) {
-				finalResult.push(normalData[normal]);
-				normal--;
+	if (!page || !limit) {
+		result = await sql.query(`SELECT * FROM "items" WHERE userid = $1 ORDER BY "createdat" DESC`, [req.body.user_ID]);
+		let finalResult = [];
+		let promotedData = [];
+		let normalData = [];
+		let promoted = 0;
+		let normal = 0;
+		let gap = 0;
+		for (let i = 0; i < result.rows.length; i++) {
+			if (result.rows[i].promoted === 'true') {
+				promotedData.push(result.rows[i]);
+				promoted += 1;
+				gap = 2;
+			}
+			else if (result.rows[i].promoted === 'false') {
+				normalData.push(result.rows[i]);
+				normal += 1;
 			}
 
-		} else {
-			if (normal > -1) {
-				finalResult.push(normalData[normal]);
-				normal--;
-			}
 		}
-	}
-	const shuffledArray = shuffleEveryThreeRows(finalResult);
+		const remainingData = [];
+		console.log(promoted)
+		console.log(normal)
+		promoted--;
+		normal--;
+		for (let i = 0; i < result.rows.length; i++) {
+			if (i % 3 === 2) {
+				if (promoted > -1) {
+					finalResult.push(promotedData[promoted]);
+					promoted--;
+				} else if (normal > -1) {
+					finalResult.push(normalData[normal]);
+					normal--;
+				}
 
-	if (result.rows) {
-		let finalArray = []
-		for (let i = 0; i < 10; i++) {
-			let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
-			if (shuffledArray.length > number) {
-				if (req.body.page === '1') {
-					finalArray.push(shuffledArray[i])
-
-				} else {
-					let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
-					console.log(number)
-					finalArray.push(shuffledArray[number])
+			} else {
+				if (normal > -1) {
+					finalResult.push(normalData[normal]);
+					normal--;
 				}
 			}
 		}
+		const shuffledArray = shuffleEveryThreeRows(finalResult);
 
-		req.body.page
-		res.json({
-			message: "User's items data",
-			status: true,
-			TotalItems: data.rows[0].count,
-			itemsPerPage: finalArray.length,
-			result: finalArray
-		})
-	}
-	else {
-		res.json({
-			message: "could not fetch",
-			status: false
-		})
+		if (result.rows) {
+			let finalArray = []
+			for (let i = 0; i < 10; i++) {
+				let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+				if (shuffledArray.length > number) {
+					if (req.body.page === '1') {
+						finalArray.push(shuffledArray[i])
+
+					} else {
+						let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+						console.log(number)
+						finalArray.push(shuffledArray[number])
+					}
+				}
+			}
+
+			req.body.page
+			res.json({
+				message: "User's items data",
+				status: true,
+				TotalItems: data.rows[0].count,
+				itemsPerPage: finalArray.length,
+				result: result.rows
+			})
+		}
+		else {
+			res.json({
+				message: "could not fetch",
+				status: false
+			})
+		}
+	} else {
+		limit = parseInt(limit);
+		let offset = (parseInt(page) - 1) * limit
+		result = await sql.query(`SELECT * FROM "items" WHERE userid = $1 ORDER BY "createdat" DESC LIMIT $2 OFFSET $3 ` , [req.body.user_ID, limit, offset]);
+		let finalResult = [];
+		let promotedData = [];
+		let normalData = [];
+		let promoted = 0;
+		let normal = 0;
+		let gap = 0;
+		for (let i = 0; i < result.rows.length; i++) {
+			if (result.rows[i].promoted === 'true') {
+				promotedData.push(result.rows[i]);
+				promoted += 1;
+				gap = 2;
+			}
+			else if (result.rows[i].promoted === 'false') {
+				normalData.push(result.rows[i]);
+				normal += 1;
+			}
+
+		}
+		const remainingData = [];
+		console.log(promoted)
+		console.log(normal)
+		promoted--;
+		normal--;
+		for (let i = 0; i < result.rows.length; i++) {
+			if (i % 3 === 2) {
+				if (promoted > -1) {
+					finalResult.push(promotedData[promoted]);
+					promoted--;
+				} else if (normal > -1) {
+					finalResult.push(normalData[normal]);
+					normal--;
+				}
+
+			} else {
+				if (normal > -1) {
+					finalResult.push(normalData[normal]);
+					normal--;
+				}
+			}
+		}
+		const shuffledArray = shuffleEveryThreeRows(finalResult);
+
+		if (result.rows) {
+			let finalArray = []
+			for (let i = 0; i < 10; i++) {
+				let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+				if (shuffledArray.length > number) {
+					if (req.body.page === '1') {
+						finalArray.push(shuffledArray[i])
+
+					} else {
+						let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
+						console.log(number)
+						finalArray.push(shuffledArray[number])
+					}
+				}
+			}
+
+			req.body.page
+			res.json({
+				message: "User's items data",
+				status: true,
+				TotalItems: data.rows[0].count,
+				itemsPerPage: finalArray.length,
+				result: result.rows
+			})
+		}
+		else {
+			res.json({
+				message: "could not fetch",
+				status: false
+			})
+		}
+
 	}
 }
 
@@ -598,11 +678,11 @@ function shuffleEveryThreeRows(array) {
 }
 function chunkArray(arr, chunkSize) {
 	const result = {};
-	let j  = 0;
+	let j = 0;
 	for (let i = 0; i < arr.length; i += chunkSize) {
-		result[j] = 
+		result[j] =
 			arr.slice(i, i + chunkSize)
-			j++;
+		j++;
 	}
 	return result;
 }
@@ -627,7 +707,7 @@ Items.GetAllItems_Admin = async (req, res) => {
 		res.json({
 			message: "User's items data",
 			status: true,
-			count:data.rows[0].count,
+			count: data.rows[0].count,
 			result: result.rows
 		})
 	}
@@ -643,14 +723,14 @@ Items.GetAllItems_Admin = async (req, res) => {
 
 Items.GetAllItems = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "items"`);
-	let limit = '10';
+	let limit = req.body.limit;
 	let page = req.body.page;
 	let result;
-	result = await sql.query(`SELECT * FROM "items" ORDER BY "createdat" DESC`);
+	result = await sql.query(`SELECT * FROM "items" ORDER BY "id" ASC`);
 	if (!page && !limit) {
 		limit = parseInt(limit);
 		let offset = (parseInt(page) - 1) * limit
-		const query = `SELECT * FROM "items" ORDER BY "createdat" DESC
+		const query = `SELECT * FROM "items" ORDER BY "id" ASC
 		 LIMIT $1 OFFSET $2`
 		result = await sql.query(query, [limit, offset]);
 	}
@@ -699,18 +779,9 @@ Items.GetAllItems = async (req, res) => {
 
 	if (result.rows) {
 		let finalArray = []
-		// let loc  = 0;
-		// let locArray = [];
 		for (let i = 0; i < 10; i++) {
 			let number = parseInt(`${parseInt(req.body.page) - 1}${parseInt(i)}`);
 			if (shuffledArray.length > number) {
-				// if(i === loc ){
-				// 	locArray[0] =  finalResult[i];
-				// 	finalResult[i] = finalResult[i+1] 
-				// 	finalResult[i+1] = locArray[0];
-				// 	loc += 2
-
-				// }
 				if (req.body.page === '1') {
 					finalArray.push(shuffledArray[i])
 
@@ -720,32 +791,14 @@ Items.GetAllItems = async (req, res) => {
 				}
 			}
 		}
-		//  finalArray.pop(10)
-		// var defaultsettings = new Object();
-		// defaultsettings =
-		// var ajaxsettings = new Object();
-		// ajaxsettings:{
-		// 	...defaultsettings
-		// }
 		const chunkedArray = chunkArray(finalArray, 3);
 		console.log(chunkedArray);
 
-		// let obj1 = new Object();
-		// obj1.assign(chunkedArray[0]);
-		// req.body.page
 		res.json({
 			message: "User's items data",
 			status: true,
-			// promoted: promotedData.length,
-			// normal: normalData.length,
 			count: finalArray.length,
 			result: chunkedArray
-			// {
-			// 	obj1,
-			// 	obj2,
-			// 	obj3,
-			// 	obj4
-			// }
 		})
 	}
 	else {
