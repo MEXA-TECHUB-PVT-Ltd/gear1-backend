@@ -7,6 +7,7 @@ const ads = function (ads) {
 	this.screen_id = ads.screen_id;
 	this.active_status = ads.active_status;
 
+
 };
 ads.Add = async (req, res) => {
 	const user = await sql.query(`select * from "screens" WHERE id = $1`
@@ -24,6 +25,8 @@ ads.Add = async (req, res) => {
         link text,
 		screen_id SERIAL NOT NULL,
         active_status text,
+		report_ad boolean,
+		report_ad_by text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id))  ` , (err, result) => {

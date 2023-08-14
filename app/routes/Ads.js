@@ -11,11 +11,11 @@ module.exports = app => {
 
     router.delete("/delete_ad", Ads.Delete);
     router.post("/get_a_ad", Ads.Get);
-    router.post("/get_all_ads", Ads.GetAll);
-    router.post("/get_ads_by_screen", Ads.GetByScreen);
+    router.post("/get_all_Ads", Ads.GetAll);
+    router.post("/get_Ads_by_screen", Ads.GetByScreen);
     router.put("/update_ad", Ads.Update);
     router.put("/update_status", Ads.UpdateStatus);
-    router.post("/get_active_ads_by_screen", Ads.GetActiveByScreen);
+    router.post("/get_active_Ads_by_screen", Ads.GetActiveByScreen);
 
 
     app.use("/ads", router);

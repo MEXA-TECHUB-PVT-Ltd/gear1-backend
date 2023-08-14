@@ -11,6 +11,8 @@ const Items = function (Items) {
 	this.description = Items.description;
 	this.likes = Items.likes;
 	this.shares = Items.shares;
+	this.video_link = Items.video_link;
+
 };
 
 Items.Add = async (req, res) => {
@@ -39,6 +41,7 @@ Items.Add = async (req, res) => {
 		start_date timestamp,
 		end_date timestamp,
 		added_by text,
+		video_link text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));` , (err, result) => {
@@ -53,11 +56,11 @@ Items.Add = async (req, res) => {
 					const start_date = new Date(req.body.start_date);
 					sql.query(`INSERT INTO items (id,userid ,images, name,  price,category_id,
 						description , location, promoted, start_date , end_date , 
-						added_by ,  createdAt ,updatedAt )
-                            VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,$7,$8,$9,$10,$11,  'NOW()', 'NOW()') RETURNING * `
+						added_by , video_link,  createdAt ,updatedAt )
+                            VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,$7,$8,$9,$10,$11, $12,   'NOW()', 'NOW()') RETURNING * `
 						, [req.body.user_ID, [], req.body.name, req.body.price,
 						req.body.category_id, req.body.description, req.body.location, 'false'
-							, start_date, end_date, req.body.added_by], (err, result) => {
+							, start_date, end_date, req.body.added_by, req.body.video_link], (err, result) => {
 								if (err) {
 									console.log(err);
 									res.json({
@@ -939,7 +942,8 @@ Items.Update = async (req, res) => {
 			const oldEnd_date = userData.rows[0].end_date;
 			const end_date = new Date(req.body.end_date);
 			const start_date = new Date(req.body.start_date);
-			let { Item_ID, name, category_id, price, description, location, promoted } = req.body;
+			const oldVideo_link = userData.rows[0].video_link;
+			let { Item_ID, name, category_id, price, description, location, promoted, video_link } = req.body;
 			if (name === undefined || name === '') {
 				name = oldName;
 			}
@@ -966,9 +970,13 @@ Items.Update = async (req, res) => {
 			if (end_date === undefined || end_date === '') {
 				end_date = oldEnd_date;
 			}
+			if (video_link === undefined || video_link === '') {
+				video_link = oldVideo_link;
+			}
+
 
 			sql.query(`UPDATE "items" SET name = $1, category_id = $2, 
-		price = $3, description = $4,location = $5, promoted = $6 , start_date = $7, end_date = $8 WHERE id = $9;`,
+		price = $3, description = $4,location = $5, promoted = $6 , start_date = $7, end_date = $8 , video_link = $9 WHERE id = $10;`,
 				[name, category_id, price, description, location, 'false', start_date, end_date, Item_ID], async (err, result) => {
 					if (err) {
 						end_date
