@@ -50,6 +50,9 @@ Orders.Add = async (req, res) => {
 								});
 							}
 							else {
+								const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+								VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+									, [req.body.user_id, result.rows[0].id, 'add order', 'orders'])
 								res.json({
 									message: "Order added Successfully!",
 									status: true,

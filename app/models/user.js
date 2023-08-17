@@ -6,6 +6,7 @@ const User = function (User) {
 	this.email = User.email;
 	this.phone = User.phone;
 	this.country_code = User.country_code;
+	this.address = User.address;
 	this.image = User.image;
 	this.cover_image = User.cover_image;
 	this.status = User.status;
@@ -20,6 +21,7 @@ User.create = async (req, res) => {
         email   text,
         phone text NOT NULL,
         country_code text ,
+		address text,
         image   text ,
         cover_image text ,
 		deviceToken text,
@@ -46,6 +48,7 @@ User.create = async (req, res) => {
 					status: false,
 				});
 			} else {
+				console.log(req.body);
 				const check = (`SELECT * FROM "user" WHERE phone = $1 AND country_code = $2`);
 				const checkResult = await sql.query(check, [req.body.phone, req.body.country_code]);
 				if (checkResult.rows.length > 0) {
@@ -54,11 +57,11 @@ User.create = async (req, res) => {
 						status: false,
 					});
 				} else if (checkResult.rows.length === 0) {
-					const { phone, country_code, deviceToken } = req.body;
-					const query = `INSERT INTO "user" (id, phone, country_code, deviceToken,status  ,createdat ,updatedat )
-                            VALUES (DEFAULT, $1, $2,$3,$4, 'NOW()','NOW()' ) RETURNING * `;
+					const { phone, country_code, deviceToken, type, address } = req.body;
+					const query = `INSERT INTO "user" (id, phone, country_code, address, deviceToken,status ,type ,createdat ,updatedat )
+                            VALUES (DEFAULT, $1, $2,$3,$4,$5,$6, 'NOW()','NOW()' ) RETURNING * `;
 					const foundResult = await sql.query(query,
-						[phone, country_code, deviceToken, 'unblock']);
+						[phone, country_code, address, deviceToken, 'unblock', type]);
 					if (foundResult.rows.length > 0) {
 						if (err) {
 							res.json({
@@ -437,6 +440,61 @@ User.AllUsers = async (req, res) => {
 		}
 	});
 }
+
+User.getHistory = async (req, res) => {
+	const userData = await sql.query(`SELECT
+	createdat::date AS history_date,
+	action_type AS title,
+	action_id AS action_id,
+	action_table AS table
+			FROM
+    			history
+			WHERE
+   				user_id = $1
+			ORDER BY
+ 				   createdat::date DESC,
+ 				   createdat DESC;
+`, [req.body.user_id]);
+
+	if (userData.rowCount > 0) {
+		const groupedData = {};
+
+		for (const row of userData.rows) {
+			const Data = await sql.query(`SELECT *
+            FROM
+                "${row.table}"
+            WHERE id::text = '${row.action_id}'`);
+			row.data = Data.rows;
+
+			const historyDate = row.history_date.toString();
+			if (!groupedData[historyDate]) {
+				groupedData[historyDate] = [];
+			}
+			groupedData[historyDate].push(row);
+		}
+
+		const result = Object.keys(groupedData).map(historyDate => {
+			return {
+				history_date: historyDate,
+				data: groupedData[historyDate]
+			};
+		});
+
+		res.json({
+			message: "User History",
+			status: true,
+			results: result,
+		});
+
+	} else {
+		res.json({
+			message: "No History Found",
+			status: false,
+		});
+	}
+}
+
+
 
 
 

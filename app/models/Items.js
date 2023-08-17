@@ -52,6 +52,12 @@ Items.Add = async (req, res) => {
 						err
 					});
 				} else {
+					let video;
+
+					if (req.file) {
+						const { path } = req.file;
+						video = path;
+					}
 					const end_date = new Date(req.body.end_date);
 					const start_date = new Date(req.body.start_date);
 					sql.query(`INSERT INTO items (id,userid ,images, name,  price,category_id,
@@ -60,7 +66,7 @@ Items.Add = async (req, res) => {
                             VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,$7,$8,$9,$10,$11, $12,   'NOW()', 'NOW()') RETURNING * `
 						, [req.body.user_ID, [], req.body.name, req.body.price,
 						req.body.category_id, req.body.description, req.body.location, 'false'
-							, start_date, end_date, req.body.added_by, req.body.video_link], (err, result) => {
+							, start_date, end_date, req.body.added_by, video], (err, result) => {
 								if (err) {
 									console.log(err);
 									res.json({
@@ -91,6 +97,9 @@ Items.Add = async (req, res) => {
 											console.log('status Changes After!');
 										});
 									}
+									const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+									VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+										, [req.body.user_ID, result.rows[0].id, 'add item', 'items'])
 									res.json({
 										message: "product added Successfully!",
 										status: true,
@@ -347,6 +356,14 @@ Items.EditImages = async (req, res) => {
 }
 
 
+Items.GetLink = async (req, res) => {
+	const itemID = req.params.item_id;
+  
+	const shareableLink = `https://localhost:3006/items/${itemID}`;
+	res.json({ link: shareableLink });
+}
+
+
 
 Items.GetItem = async (req, res) => {
 	const liked = await sql.query(`SELECT user_id  AS likey_by FROM "likeitems"
@@ -363,6 +380,9 @@ Items.GetItem = async (req, res) => {
 					err
 				});
 			} else {
+				const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+					, [req.body.user_id, result.rows[0].id, 'view item', 'items'])
 				res.json({
 					message: "items data",
 					status: true,
@@ -573,7 +593,7 @@ Items.GetUserItems = async (req, res) => {
 	} else {
 		limit = parseInt(limit);
 		let offset = (parseInt(page) - 1) * limit
-		result = await sql.query(`SELECT * FROM "items" WHERE userid = $1 ORDER BY "createdat" DESC LIMIT $2 OFFSET $3 ` , [req.body.user_ID, limit, offset]);
+		result = await sql.query(`SELECT * FROM "items" WHERE userid = $1 ORDER BY "createdat" DESC LIMIT $2 OFFSET $3 `, [req.body.user_ID, limit, offset]);
 		let finalResult = [];
 		let promotedData = [];
 		let normalData = [];
@@ -974,10 +994,16 @@ Items.Update = async (req, res) => {
 				video_link = oldVideo_link;
 			}
 
+			let video;
+
+			if (req.file) {
+				const { path } = req.file;
+				video = path;
+			}
 
 			sql.query(`UPDATE "items" SET name = $1, category_id = $2, 
 		price = $3, description = $4,location = $5, promoted = $6 , start_date = $7, end_date = $8 , video_link = $9 WHERE id = $10;`,
-				[name, category_id, price, description, location, 'false', start_date, end_date, Item_ID], async (err, result) => {
+				[name, category_id, price, description, location, 'false', start_date, end_date,video, Item_ID], async (err, result) => {
 					if (err) {
 						end_date
 						console.log(err);
@@ -1009,6 +1035,9 @@ Items.Update = async (req, res) => {
 									console.log('status Change!');
 								});
 							}
+							const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+							VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+								, [req.body.user_ID, data.rows[0].id, 'update item', 'items'])			
 							res.json({
 								message: "Item Updated Successfully!",
 								status: true,
@@ -1044,6 +1073,9 @@ Items.Delete = async (req, res) => {
 					err
 				});
 			} else {
+				const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+					, [req.body.user_ID, data.rows[0].id, 'delete item', 'items'])			
 				res.json({
 					message: "Item Deleted Successfully!",
 					status: true,

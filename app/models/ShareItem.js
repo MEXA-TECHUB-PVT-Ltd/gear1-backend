@@ -50,6 +50,9 @@ ShareItem.ShareItem = async (req, res) => {
 							});
 						}
 						else {
+							const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+							VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+								, [req.body.user_ID, req.body.item_ID, 'Share Item', 'items'])
 							res.json({
 								message: "item share's Successfully!",
 								status: true,
@@ -87,6 +90,10 @@ ShareItem.UnShareItem = async (req, res) => {
 					err
 				});
 			} else {
+				const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+					, [req.body.user_ID, req.body.item_ID, 'Un Share Item', 'items'])
+
 				res.json({
 					message: "item un-share Successfully!",
 					status: true,

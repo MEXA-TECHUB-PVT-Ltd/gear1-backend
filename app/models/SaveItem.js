@@ -55,6 +55,9 @@ SaveItem.SaveItem = async (req, res) => {
 								});
 							}
 							else {
+								const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+								VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+									, [req.body.user_ID, req.body.item_ID, 'Save Item', 'items'])				
 								res.json({
 									message: "item Saved Successfully!",
 									status: true,
@@ -90,6 +93,9 @@ SaveItem.UnSaveItem = async (req, res) => {
 					err
 				});
 			} else {
+				const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+					, [req.body.user_ID, req.body.item_ID, 'Un Save Item', 'items'])
 				res.json({
 					message: "item Unsaved Successfully!",
 					status: true,

@@ -108,6 +108,9 @@ LikeItem.LikeItem = async (req, res) => {
 						ON "likeitems".user_id = "user".id where "likeitems".user_id = $1 
 						  `, [req.body.user_ID]);
 						console.log(user.rows);
+						const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+						VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+							, [req.body.user_ID, req.body.item_ID, 'like item', 'items'])
 
 						const item = await sql.query(`SELECT  "items".name, "items".userid FROM "likeitems" JOIN "items" 
 						  ON "likeitems".item_id = "items".id where "likeitems".item_id = $1 
@@ -182,6 +185,9 @@ LikeItem.UnLikeItem = async (req, res) => {
 					err
 				});
 			} else {
+				const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+					, [req.body.user_ID, req.body.item_ID, 'Un Like item', 'items'])
 				res.json({
 					message: "item un-like Successfully!",
 					status: true,

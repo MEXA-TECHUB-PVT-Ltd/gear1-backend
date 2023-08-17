@@ -41,6 +41,9 @@ report_ads.Add = async (req, res) => {
 							});
 						}
 						else {
+							const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+							VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+								, [req.body.report_by, req.body.report_id, 'Report Ad', 'ads'])			
 							res.json({
 								message: "Ad Reported Successfully!",
 								status: true,
