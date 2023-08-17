@@ -20,7 +20,8 @@ module.exports = app => {
     router.get("/specific_user/:id", Auth.SpecificUser)
     router.delete("/delete_user/:id", Auth.DeleteUser)
     router.get("/totay_added_users", Auth.todaysAddedUsers)
-    
+    router.post("/get_history", Auth.getHistory)
+
     router.get("/total_users", Auth.TotalUsers)
     router.post("/get_monthwise_users", Auth.getAllUsers_MonthWise_count)
     router.get("/get_years", Auth.getYears)

@@ -29,7 +29,7 @@ ads.Add = async (req, res) => {
 		report_ad_by text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
-        PRIMARY KEY (id))  ` , (err, result) => {
+        PRIMARY KEY (id))  ` , async (err, result) => {
 			if (err) {
 				res.json({
 					message: "Try Again",
@@ -37,9 +37,10 @@ ads.Add = async (req, res) => {
 					err
 				});
 			} else {
+
 				sql.query(`INSERT INTO ads (id ,ad_name, link, screen_id, active_status, createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3 ,$4,  'NOW()', 'NOW()') RETURNING * `
-					, [ req.body.ad_name,req.body.link, req.body.screen_id, 'active'], (err, result) => {
+					, [ req.body.ad_name,req.body.link, req.body.screen_id, 'active'], async (err, result) => {
 						if (err) {
 							console.log(err);
 							res.json({
@@ -49,6 +50,9 @@ ads.Add = async (req, res) => {
 							});
 						}
 						else {
+							const History = await sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+							VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+					, [ req.body.user_id , result.rows[0].id, 'add ads', 'ads'])			
 							res.json({
 								message: "Ad's added Successfully!",
 								status: true,

@@ -83,7 +83,7 @@ RateUser.RateUser = async (req, res) => {
 		});
 	} else if (merchandise.rowCount > 0) {
 		if (user.rowCount > 0) {
-		sql.query(`CREATE TABLE IF NOT EXISTS public.rateusers (
+			sql.query(`CREATE TABLE IF NOT EXISTS public.rateusers (
         id SERIAL,
         rate_by_user_id SERIAL NOT NULL,
         user_id SERIAL NOT NULL,
@@ -91,79 +91,82 @@ RateUser.RateUser = async (req, res) => {
         createdAt timestamp,
         updatedAt timestamp ,
         PRIMARY KEY (id));  ` , (err, result) => {
-			if (err) {
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				sql.query(`INSERT INTO rateusers (id, rate_by_user_id , user_id,rating, createdAt ,updatedAt )
+				if (err) {
+					res.json({
+						message: "Try Again",
+						status: false,
+						err
+					});
+				} else {
+					sql.query(`INSERT INTO rateusers (id, rate_by_user_id , user_id,rating, createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3 ,'NOW()', 'NOW()') 
 							RETURNING * `, [req.body.rate_by_user_ID, req.body.user_ID, req.body.rating], async (err, result) => {
-					if (err) {
-						res.json({
-							message: "Try Again",
-							status: false,
-							err
-						});
-					}
-					else {
+						if (err) {
+							res.json({
+								message: "Try Again",
+								status: false,
+								err
+							});
+						}
+						else {
+							const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+						VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+								, [req.body.rate_by_user_ID, req.body.user_ID, 'Rate User', 'user'])
 
-						const user = await sql.query(`SELECT  "user".username FROM "rateusers" JOIN "user" 
+							const user = await sql.query(`SELECT  "user".username FROM "rateusers" JOIN "user" 
 						ON "rateusers".rate_by_user_id = "user".id where "rateusers".rate_by_user_id = $1 
 						  `, [req.body.rate_by_user_ID]);
-						if (user.rows.length > 1) {
-							console.log(user.rows[0].username);
+							if (user.rows.length > 1) {
+								console.log(user.rows[0].username);
 
-							sendNotificationToUser(req.body.user_ID, `${user.rows[0].username} rates you  : ${req.body.rating} `);
+								sendNotificationToUser(req.body.user_ID, `${user.rows[0].username} rates you  : ${req.body.rating} `);
 
 
 
-							const data = await sql.query(`INSERT INTO  "notifications"
+								const data = await sql.query(`INSERT INTO  "notifications"
 							 (id, user_id, notification_from , notification_message , createdAt ,updatedAt)
 							 VALUES (DEFAULT, $1  , $2,$3,'NOW()', 'NOW()') 
 							  `, [req.body.user_ID, req.body.rate_by_user_ID, `${user.rows[0].username} rates you  : ${req.body.rating} `]);
-							if (data.rows.length > 1) {
+								if (data.rows.length > 1) {
+									res.json({
+										message: "Rate User Successfully!",
+										status: true,
+										result: result.rows,
+									});
+								}
+								else {
+									res.json({
+										message: "Rate User Successfully!",
+										status: true,
+										result: result.rows,
+									});
+								}
+							} else {
 								res.json({
 									message: "Rate User Successfully!",
 									status: true,
 									result: result.rows,
 								});
 							}
-							else {
-								res.json({
-									message: "Rate User Successfully!",
-									status: true,
-									result: result.rows,
-								});
-							}
-						} else {
-							res.json({
-								message: "Rate User Successfully!",
-								status: true,
-								result: result.rows,
-							});
+
+
 						}
 
+					})
 
-					}
-
-				})
-
-			};
-		});
+				};
+			});
+		} else {
+			res.json({
+				message: "Entered User ID is not present",
+				status: false,
+			});
+		}
 	} else {
 		res.json({
-			message: "Entered User ID is not present",
+			message: "Entered Rate by User-ID is not present",
 			status: false,
 		});
-	}
-} else {
-	res.json({
-		message: "Entered Rate by User-ID is not present",
-		status: false,
-	});
 	}
 }
 

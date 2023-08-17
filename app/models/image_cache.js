@@ -1,12 +1,12 @@
 const { sql } = require("../config/db.config");
 
-const image_cache = function (image_cache) {
-	this.file_id = image_cache.file_id;
-	this.image = image_cache.image;
+const Image_Cache = function (Image_Cache) {
+	this.file_id = Image_Cache.file_id;
+	this.image = Image_Cache.image;
 
 };
 
-image_cache.addImage = async (req, res) => {
+Image_Cache.addImage = async (req, res) => {
 	if (!req.body.file_id || req.body.file_id === '') {
 		res.json({
 			message: "Please Enter Category file_id",
@@ -61,7 +61,7 @@ image_cache.addImage = async (req, res) => {
 
 
 
-image_cache.GetOne = (req, res) => {
+Image_Cache.GetOne = (req, res) => {
 	sql.query(`SELECT * FROM "image_cache" WHERE id = ${req.body.id};`, (err, result) => {
 		if (err) {
 			res.json({
@@ -79,7 +79,7 @@ image_cache.GetOne = (req, res) => {
 	});
 }
 
-image_cache.GetAll = async (req, res) => {
+Image_Cache.GetAll = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "image_cache"`);
 	let limit = '10';
 	let page = req.body.page;
@@ -110,7 +110,7 @@ image_cache.GetAll = async (req, res) => {
 
 
 
-image_cache.Update = async (req, res) => {
+Image_Cache.Update = async (req, res) => {
 	if (req.body.id === '') {
 		res.json({
 			message: "id is required",
@@ -164,7 +164,7 @@ image_cache.Update = async (req, res) => {
 }
 
 
-image_cache.Delete = async (req, res) => {
+Image_Cache.Delete = async (req, res) => {
 	const data = await sql.query(`select * from "image_cache" where id = ${req.params.id}`);
 	if (data.rows.length === 1) {
 		sql.query(`DELETE FROM image_cache WHERE id = ${req.params.id};`, (err, result) => {
@@ -190,4 +190,4 @@ image_cache.Delete = async (req, res) => {
 		});
 	}
 }
-module.exports = image_cache;
+module.exports = Image_Cache;

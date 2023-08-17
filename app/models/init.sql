@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.User (
         email   text,
         phone text NOT NULL,
         country_code text ,
+        address text,
         image   text ,
         cover_image text ,
         deviceToken text,
@@ -201,6 +202,20 @@ CREATE TABLE IF NOT EXISTS public.report_items (
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));
+
+
+CREATE TABLE IF NOT EXISTS public.history (
+        id SERIAL NOT NULL,
+        user_id text,
+        action_id text,
+        action_type text,
+        action_table text,
+        count text,
+        createdAt timestamp NOT NULL,
+        updatedAt timestamp ,
+        PRIMARY KEY (id));
+
+
 
 -- CREATE TABLE IF NOT EXISTS public.SubscriptionPlan (
 --         id SERIAL NOT NULL,

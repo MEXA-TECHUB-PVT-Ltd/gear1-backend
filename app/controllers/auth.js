@@ -20,7 +20,15 @@ exports.signIn = (req, res) => {
   }  
   user.login( req, res);
 };
-
+exports.getHistory = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  user.getHistory( req, res);
+};
 exports.AllUsers = (req, res) => {
   if (!req.body) {
     res.json({

@@ -18,6 +18,15 @@ exports.Delete = (req, res) => {
   }  
   Items.Delete( req, res);
 };
+exports.GetLink = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Items.GetLink( req, res);
+};
 exports.GetAllItems_Admin = (req, res) => {
   if (!req.body) {
     res.json({

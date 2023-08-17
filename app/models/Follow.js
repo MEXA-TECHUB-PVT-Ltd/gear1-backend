@@ -107,6 +107,10 @@ Follow.Follow = async (req, res) => {
 									err
 								});
 							} else {
+								const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+								VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+										, [req.body.follow_by_user_ID, req.body.user_ID, 'Un Followed User', 'user'])
+		
 								res.json({
 									message: "User Unfollowed Successfully!",
 									status: true,
@@ -128,6 +132,9 @@ Follow.Follow = async (req, res) => {
 								});
 							}
 							else {
+								const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+								VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+										, [req.body.follow_by_user_ID, req.body.user_ID, 'Followed User', 'user'])
 								const user = await sql.query(`SELECT  "user".username FROM "followusers" JOIN "user" 
 						ON "followusers".follow_by_user_id = "user".id where "followusers".follow_by_user_id = $1 
 						  `, [req.body.follow_by_user_ID]);

@@ -1,16 +1,16 @@
 module.exports = app => {
 
 
-    const image_cache = require("../controllers/image_cache");
+    const Image_Cache = require("../controllers/Image_Cache");
     const upload = require("../middlewares/FolderImagesMulter")
 
     let router = require("express").Router();
 
-    router.post("/add", upload.single('image'),  image_cache.addImage);
-    router.put("/update",upload.single('image'), image_cache.Update);
-    router.delete("/delete/:id", image_cache.Delete);
-    router.post("/get", image_cache.GetOne);
-    router.post("/get_all", image_cache.GetAll);
+    router.post("/add", upload.single('image'),  Image_Cache.addImage);
+    router.put("/update",upload.single('image'), Image_Cache.Update);
+    router.delete("/delete/:id", Image_Cache.Delete);
+    router.post("/get", Image_Cache.GetOne);
+    router.post("/get_all", Image_Cache.GetAll);
 
-    app.use("/upload", router);
+    app.use("/image_cache", router);
 };
