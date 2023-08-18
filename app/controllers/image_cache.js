@@ -1,4 +1,4 @@
-const Image_Cache = require("../models/Image_Cache");
+const image_cache = require("../models/image_cache");
 
 exports.addImage = (req, res) => {
   if (!req.body) {
@@ -7,7 +7,7 @@ exports.addImage = (req, res) => {
       status: false,
      });
   }  
-  Image_Cache.addImage( req, res);
+  image_cache.addImage( req, res);
 };
 exports.Update = (req, res) => {
   if (!req.body) {
@@ -16,7 +16,7 @@ exports.Update = (req, res) => {
       status: false,
      });
   }  
-  Image_Cache.Update( req, res);
+  image_cache.Update( req, res);
 };
 exports.GetAll = (req, res) => {
   if (!req.body) {
@@ -25,7 +25,7 @@ exports.GetAll = (req, res) => {
       status: false,
      });
   }  
-  Image_Cache.GetAll( req, res);
+  image_cache.GetAll( req, res);
 };
 exports.GetOne = (req, res) => {
   if (!req.body) {
@@ -34,7 +34,7 @@ exports.GetOne = (req, res) => {
       status: false,
      });
   }  
-  Image_Cache.GetOne( req, res);
+  image_cache.GetOne( req, res);
 };
 exports.Delete= (req, res) => {
   if (!req.body) {
@@ -43,5 +43,5 @@ exports.Delete= (req, res) => {
       status: false,
      });
   }  
-  Image_Cache.Delete( req, res);
+  image_cache.Delete( req, res);
 };
