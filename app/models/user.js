@@ -265,14 +265,10 @@ User.updateProfile = async (req, res) => {
 			const oldEmail = userData.rows[0].email;
 			const oldPhone = userData.rows[0].phone;
 			const oldCountry_code = userData.rows[0].country_code;
-			// let image = userData.rows[0].image;
-			// let cover_image = userData.rows[0].cover_image;
+			const oldAddress = userData.rows[0].address;
 
-			let { id, username, email, phone, country_code } = req.body;
-			// if (req.file) {
-			// 	const { path } = req.file;
-			// 	photo = path;
-			// }
+			let { id, username, email, phone, country_code, address } = req.body;
+
 			if (username === undefined || username === '') {
 				username = oldName;
 			}
@@ -282,13 +278,16 @@ User.updateProfile = async (req, res) => {
 			if (phone === undefined || phone === '') {
 				phone = oldPhone;
 			}
+			if (address === undefined || address === '') {
+				address = oldAddress;
+			}
 
 			if (country_code === undefined || country_code === '') {
 				country_code = oldCountry_code;
 			}
 			sql.query(`UPDATE "user" SET username = $1, email = $2, 
-		phone = $3, country_code = $4 WHERE id = $5;`,
-				[username, email, phone, country_code, id], async (err, result) => {
+		phone = $3, country_code = $4, address = $5 WHERE id = $6;`,
+				[username, email, phone, country_code, address, id], async (err, result) => {
 					if (err) {
 						console.log(err);
 						res.json({
@@ -379,6 +378,31 @@ User.SpecificUser = async (req, res) => {
 	const followings = await sql.query(`SELECT COUNT(*) AS followings FROM "followusers"
 	where follow_by_user_id = $1 
 	 `, [req.params.id]);
+	const items = await sql.query(`SELECT COUNT(*) AS items FROM "items"
+	 where userid = $1 
+	  `, [req.params.id]);
+	const likedItems = await sql.query(`SELECT COUNT(*) AS liked_items FROM "likeitems"
+	 where user_id = $1 
+	  `, [req.params.id]);
+	const social_media = await sql.query(`SELECT *  FROM "socialmedia" 
+	 where userid = $1 
+	  `, [req.params.id]);
+
+
+
+	const reported_items = await sql.query(`SELECT COUNT(*) AS reported_items  FROM "report_items" 
+	 where report_by = $1 
+	  `, [req.params.id]);
+	const saved_items = await sql.query(`SELECT COUNT(*) AS saved_items  FROM "saveitems" 
+	 where user_id = $1 
+	  `, [req.params.id]);
+	const shared_items = await sql.query(`SELECT COUNT(*) AS shared_items  FROM "shareitems" 
+	 where user_id = $1 
+	  `, [req.params.id]);
+	const report_ads = await sql.query(`SELECT COUNT(*) AS report_ads  FROM "report_ads" 
+	 where report_by = $1 
+	  `, [req.params.id]);
+
 	const ratings = await sql.query(`SELECT COUNT(*) AS totalRatings FROM "rateusers"
 	 where user_id = $1 
 	  `, [req.params.id]);
@@ -410,6 +434,15 @@ User.SpecificUser = async (req, res) => {
 			res.json({
 				message: "User Details",
 				status: true,
+				items: items.rows[0].items,
+				likedItems: likedItems.rows[0].liked_items,
+				social_media: social_media.rows[0],
+
+				reported_items: reported_items.rows[0].reported_items,
+				saved_items: saved_items.rows[0].saved_items,
+				shared_items: shared_items.rows[0].shared_items,
+				report_ads: report_ads.rows[0].report_ads,
+
 				followers: followers.rows[0].followers,
 				followings: followings.rows[0].followings,
 				Total_Ratings: ratings.rows[0].totalratings,
@@ -419,6 +452,7 @@ User.SpecificUser = async (req, res) => {
 		}
 	});
 }
+
 
 User.AllUsers = async (req, res) => {
 	const userData = await sql.query(`select COUNT(*) as count from "user"  `);
