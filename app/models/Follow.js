@@ -195,7 +195,7 @@ Follow.Follow = async (req, res) => {
 
 Follow.GetFollowers = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "followusers"
-	 where follow_by_user_id = $1 
+	 where user_id = $1 
 	  `, [req.body.user_ID]);
 
 	let limit = '10';

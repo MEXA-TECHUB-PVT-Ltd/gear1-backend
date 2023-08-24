@@ -65,7 +65,7 @@ Items.Add = async (req, res) => {
 						added_by , video_link,  createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,$7,$8,$9,$10,$11, $12,   'NOW()', 'NOW()') RETURNING * `
 						, [req.body.user_ID, [], req.body.name, req.body.price,
-						req.body.category_id, req.body.description, req.body.location, 'false'
+						req.body.category_id, req.body.description, req.body.location, promoted
 							, start_date, end_date, req.body.added_by, video], (err, result) => {
 								if (err) {
 									console.log(err);
@@ -76,17 +76,20 @@ Items.Add = async (req, res) => {
 									});
 								}
 								else {
-									if (req.body.promoted === true) {
+									if (req.body.promoted == true || req.body.promoted == 'true') {
 										// 86400000 ===== 24 hours
+										console.log("startTimeFalse");
 										const startTime = new Date(req.body.start_date);
 										console.log(startTime);
 										const endTime = new Date(startTime.getTime() + 1000);
 										let job1 = schedule.scheduleJob({ start: startTime, end: endTime, rule: '*/1 * * * * *' }, async function () {
+											console.log('Job1')
 											const userData = await sql.query(`UPDATE "items" SET promoted = $1
 									 WHERE id = $2;`, ['true', result.rows[0].id]);
 											console.log('status Change!');
 
 										});
+										console.log(job1);
 
 										const startTimeFalse = new Date(req.body.end_date);
 										console.log(startTimeFalse);
@@ -94,10 +97,12 @@ Items.Add = async (req, res) => {
 										let job = schedule.scheduleJob({ start: startTimeFalse, end: endTimeFalse, rule: '*/1 * * * * *' }, async function () {
 											const userData = await sql.query(`UPDATE "items" SET promoted = $1
 									 WHERE id = $2;`, ['false', result.rows[0].id]);
+									 console.log('Job1')
 											console.log('status Changes After!');
 										});
+										console.log(job);
 									}
-									const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+									const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
 									VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
 										, [req.body.user_ID, result.rows[0].id, 'add item', 'items'])
 									res.json({
@@ -358,7 +363,7 @@ Items.EditImages = async (req, res) => {
 
 Items.GetLink = async (req, res) => {
 	const itemID = req.params.item_id;
-  
+
 	const shareableLink = `https://localhost:3006/items/${itemID}`;
 	res.json({ link: shareableLink });
 }
@@ -380,7 +385,7 @@ Items.GetItem = async (req, res) => {
 					err
 				});
 			} else {
-				const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
 				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
 					, [req.body.user_id, result.rows[0].id, 'view item', 'items'])
 				res.json({
@@ -947,7 +952,7 @@ Items.Update = async (req, res) => {
 		const userData = await sql.query(`select * from "items" where id = $1 
 		`, [req.body.Item_ID]);
 
-		if (userData.rowCount === 1) {
+		if (userData.rowCount > 0) {
 			// promoted text,
 			// start_date timestamp,
 			// end_date timestamp,
@@ -999,11 +1004,13 @@ Items.Update = async (req, res) => {
 			if (req.file) {
 				const { path } = req.file;
 				video = path;
+			} else {
+				video = oldVideo_link
 			}
 
 			sql.query(`UPDATE "items" SET name = $1, category_id = $2, 
 		price = $3, description = $4,location = $5, promoted = $6 , start_date = $7, end_date = $8 , video_link = $9 WHERE id = $10;`,
-				[name, category_id, price, description, location, 'false', start_date, end_date,video, Item_ID], async (err, result) => {
+				[name, category_id, price, description, location, promoted, start_date, end_date, video, Item_ID], async (err, result) => {
 					if (err) {
 						end_date
 						console.log(err);
@@ -1013,31 +1020,32 @@ Items.Update = async (req, res) => {
 							err
 						});
 					} else {
-						if (result.rowCount === 1) {
+						if (result.rowCount > 0) {
 							const data = await sql.query(`select * from "items" where id = $1`, [req.body.Item_ID]);
-							if (req.body.promoted === true) {
+							if (req.body.promoted == 'true' || req.body.promoted == true) { 
 								// 86400000 ===== 24 hours
-								const startTime = new Date(start_date);
+								const startTime = new Date(req.body.start_date);
 								console.log(startTime);
 								const endTime = new Date(startTime.getTime() + 1000);
 								let job1 = schedule.scheduleJob({ start: startTime, end: endTime, rule: '*/1 * * * * *' }, async function () {
 									const userData = await sql.query(`UPDATE "items" SET promoted = $1
-									 WHERE id = $2;`, ['true', Item_ID]);
+							 WHERE id = $2;`, ['true', result.rows[0].id]);
 									console.log('status Change!');
 
 								});
-								const startTimeFalse = new Date(end_date);
+
+								const startTimeFalse = new Date(req.body.end_date);
 								console.log(startTimeFalse);
 								const endTimeFalse = new Date(startTimeFalse.getTime() + 1000);
 								let job = schedule.scheduleJob({ start: startTimeFalse, end: endTimeFalse, rule: '*/1 * * * * *' }, async function () {
 									const userData = await sql.query(`UPDATE "items" SET promoted = $1
-									 WHERE id = $2;`, ['false', Item_ID]);
-									console.log('status Change!');
+							 WHERE id = $2;`, ['false', result.rows[0].id]);
+									console.log('status Changes After!');
 								});
 							}
-							const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+							const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
 							VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
-								, [req.body.user_ID, data.rows[0].id, 'update item', 'items'])			
+								, [req.body.user_ID, data.rows[0].id, 'update item', 'items'])
 							res.json({
 								message: "Item Updated Successfully!",
 								status: true,
@@ -1073,9 +1081,9 @@ Items.Delete = async (req, res) => {
 					err
 				});
 			} else {
-				const History =  sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
 				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
-					, [req.body.user_ID, data.rows[0].id, 'delete item', 'items'])			
+					, [req.body.user_ID, data.rows[0].id, 'delete item', 'items'])
 				res.json({
 					message: "Item Deleted Successfully!",
 					status: true,

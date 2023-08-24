@@ -229,10 +229,10 @@ Orders.changeOrderStatus = async (req, res) => {
 		const userData = await sql.query(`select * from "orders" where id = $1 
 		`, [req.body.Order_ID]);
 
-		if (userData.rowCount === 1) {
+		if (userData.rowCount > 0) {
 
 			const oldStatus = userData.rows[0].status;
-
+			console.log(req.body);
 			let { Order_ID, status } = req.body;
 			if (status === undefined || status === '') {
 				status = oldStatus;
@@ -247,7 +247,7 @@ Orders.changeOrderStatus = async (req, res) => {
 							err
 						});
 					} else {
-						if (result.rowCount === 1) {
+						if (result.rowCount > 0) {
 							const data = await sql.query(`select * from "orders" where id = $1`, [req.body.Order_ID]);
 							res.json({
 								message: "Status Updated Successfully!",

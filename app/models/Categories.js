@@ -189,7 +189,9 @@ Categories.GetAllCategories = async (req, res) => {
 		LIMIT $1 OFFSET $2 ` , [limit1, req.body.AdsOffset]);
 		console.log("ads.rowCount");
 		console.log(ads.rowCount);
-		if (category.rowCount > 0) {
+
+		if (category.rowCount === 0) {
+
 			if (ads.rowCount > 0) {
 				ads.rows[0] = {
 					...ads.rows[0],
@@ -198,39 +200,83 @@ Categories.GetAllCategories = async (req, res) => {
 				category.rows.splice(0, 0, ads.rows[0]);
 				rowCount++;
 			}
-		}
-		if (category.rowCount > 7) {
-			if (ads.rowCount > 2) {
-				ads.rows[1] = {
-					...ads.rows[1],
-					type: 'ad'
-				}
-				category.rows.splice(7, 0, ads.rows[1]);
-				rowCount++;
+
+			for (var i = 1; i < ads.rowCount; i++) {
+				category.rows.push(ads.rows[i]);
 			}
-		} else {
-			let j = category.rowCount 
-			for (let i = 0; i <= ads.rowCount-1; i++) {
-				ads.rows[i] = {
-					...ads.rows[i],
-					type: 'ad'
+		} else
+			if (category.rowCount > 0 && category.rowCount < 6) {
+
+				if (ads.rowCount > 0) {
+					ads.rows[0] = {
+						...ads.rows[0],
+						type: 'ad'
+					}
+					category.rows.splice(0, 0, ads.rows[0]);
+					rowCount++;
 				}
-				category.rows.splice(i, 0, ads.rows[i]);
-				j++;
-				rowCount++;
-			}
-		}
-		if (category.rowCount > 7 && category.rowCount < 12) {
-			let j = rowCount;
-			for (let i = 2; i < ads.rowCount; i++) {
-				ads.rows[i] = {
-					...ads.rows[i],
-					type: 'ad'
+
+				for (var i = 1; i < ads.rowCount; i++) {
+					category.rows.push(ads.rows[i]);
 				}
-				category.rows.splice(j, 0, ads.rows[i]);
-				j++;
+			} else {
+				if (category.rowCount > 6 && category.rowCount < 12) {
+					console.log("ads.rowCount");
+					if (ads.rowCount > 0) {
+						ads.rows[0] = {
+							...ads.rows[0],
+							type: 'ad'
+						}
+						category.rows.splice(0, 0, ads.rows[0]);
+						category.rows.splice(7, 0, ads.rows[1]);
+						rowCount++;
+					}
+					for (var i = 2; i < ads.rowCount; i++) {
+						category.rows.push(ads.rows[i]);
+					}
+				}
 			}
-		}
+
+		// if (category.rowCount > 0) {
+		// 	if (ads.rowCount > 0) {
+		// 		ads.rows[0] = {
+		// 			...ads.rows[0],
+		// 			type: 'ad'
+		// 		}
+		// 		category.rows.splice(0, 0, ads.rows[0]);
+		// 		rowCount++;
+		// 	}
+		// }
+
+		// if (category.rowCount > 7  ) {
+		// 	console.log("Here1")
+		// 	if (ads.rowCount > 2) {
+		// 		ads.rows[1] = {
+		// 			...ads.rows[1],
+		// 			type: 'ad'
+		// 		}
+		// 		category.rows.splice(7, 0, ads.rows[1]);
+		// 		rowCount++;
+		// 	}
+		// 	} else {
+		// 		let j = category.rowCount
+		// 		for (let i = category.rowCount; i <= ads.rowCount - 1; i++) {
+		// 			ads.rows[i] = {
+		// 				...ads.rows[i],
+		// 				type: 'ad'
+		// 			}
+		// 			category.rows.splice(i, 0, ads.rows[i]);
+		// 			j++;
+		// 			rowCount++;
+		// 		}
+		// 	}
+
+
+
+
+
+
+
 
 	} else if (category.rowCount === 12) {
 		limit1 = 2;
@@ -253,7 +299,7 @@ Categories.GetAllCategories = async (req, res) => {
 		}
 
 	}
-	
+
 	if (category.rows) {
 		res.json({
 			message: "All categories Details",
