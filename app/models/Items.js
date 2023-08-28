@@ -65,7 +65,7 @@ Items.Add = async (req, res) => {
 						added_by , video_link,  createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3, $4, $5 ,$6,$7,$8,$9,$10,$11, $12,   'NOW()', 'NOW()') RETURNING * `
 						, [req.body.user_ID, [], req.body.name, req.body.price,
-						req.body.category_id, req.body.description, req.body.location, promoted
+						req.body.category_id, req.body.description, req.body.location, req.body.promoted
 							, start_date, end_date, req.body.added_by, video], (err, result) => {
 								if (err) {
 									console.log(err);
@@ -82,7 +82,8 @@ Items.Add = async (req, res) => {
 										const startTime = new Date(req.body.start_date);
 										console.log(startTime);
 										const endTime = new Date(startTime.getTime() + 1000);
-										let job1 = schedule.scheduleJob({ start: startTime, end: endTime, rule: '*/1 * * * * *' }, async function () {
+										let job1 = schedule.scheduleJob({ start: startTime, end: endTime, 
+											rule: '*/1 * * * * *' }, async function () {
 											console.log('Job1')
 											const userData = await sql.query(`UPDATE "items" SET promoted = $1
 									 WHERE id = $2;`, ['true', result.rows[0].id]);
@@ -1098,6 +1099,44 @@ Items.Delete = async (req, res) => {
 			status: false,
 		});
 	}
+}
+
+Items.DeleteAll_User = async (req, res) => {
+		sql.query(`DELETE FROM items WHERE userid = ${req.body.user_id};`, (err, result) => {
+			if (err) {
+				res.json({
+					message: "Try Again",
+					status: false,
+					err
+				});
+			} else {
+				const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+					, [req.body.user_ID, '', 'delete All items', 'items'])
+				res.json({
+					message: "All Item of a User Deleted Successfully!",
+					status: true,
+
+				});
+			}
+		});
+}
+Items.DeleteAll = async (req, res) => {
+		sql.query(`DELETE FROM items`, (err, result) => {
+			if (err) {
+				res.json({
+					message: "Try Again",
+					status: false,
+					err
+				});
+			} else {
+				res.json({
+					message: "All Items Deleted Successfully!",
+					status: true,
+
+				});
+			}
+		});
 }
 
 

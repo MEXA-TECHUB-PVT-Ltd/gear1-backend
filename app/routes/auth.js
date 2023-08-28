@@ -17,10 +17,12 @@ module.exports = app => {
     router.post("/verifyOTP", Auth.verifyOTP)
     router.post("/newPassword", Auth.newPassword)
     router.get("/all_users", Auth.AllUsers)
-    router.get("/specific_user/:id", Auth.SpecificUser)
+    router.post("/specific_user", Auth.SpecificUser)
     router.delete("/delete_user/:id", Auth.DeleteUser)
     router.get("/totay_added_users", Auth.todaysAddedUsers)
     router.post("/get_history", Auth.getHistory)
+    router.delete("/delete", Auth.Delete)
+    router.delete("/Delete_all", Auth.DeleteAll)
 
     router.get("/total_users", Auth.TotalUsers)
     router.post("/get_monthwise_users", Auth.getAllUsers_MonthWise_count)

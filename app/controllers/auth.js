@@ -20,6 +20,24 @@ exports.signIn = (req, res) => {
   }  
   user.login( req, res);
 };
+exports.DeleteAll = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  user.DeleteAll( req, res);
+};
+exports.Delete = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  user.Delete( req, res);
+};
 exports.getHistory = (req, res) => {
   if (!req.body) {
     res.json({

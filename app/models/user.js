@@ -377,38 +377,38 @@ User.ChangeNumber = async (req, res) => {
 User.SpecificUser = async (req, res) => {
 	const followings = await sql.query(`SELECT COUNT(*) AS followings FROM "followusers"
 	where follow_by_user_id = $1 
-	 `, [req.params.id]);
+	 `, [req.body.Viewing_user]);
 	const items = await sql.query(`SELECT COUNT(*) AS items FROM "items"
 	 where userid = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const likedItems = await sql.query(`SELECT COUNT(*) AS liked_items FROM "likeitems"
 	 where user_id = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const social_media = await sql.query(`SELECT *  FROM "socialmedia" 
 	 where userid = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 
 
 
 	const reported_items = await sql.query(`SELECT COUNT(*) AS reported_items  FROM "report_items" 
 	 where report_by = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const saved_items = await sql.query(`SELECT COUNT(*) AS saved_items  FROM "saveitems" 
 	 where user_id = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const shared_items = await sql.query(`SELECT COUNT(*) AS shared_items  FROM "shareitems" 
 	 where user_id = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const report_ads = await sql.query(`SELECT COUNT(*) AS report_ads  FROM "report_ads" 
 	 where report_by = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 
 	const ratings = await sql.query(`SELECT COUNT(*) AS totalRatings FROM "rateusers"
 	 where user_id = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const avgRatings = await sql.query(`SELECT rating FROM "rateusers"
 	  where user_id = $1 
-	   `, [req.params.id]);
+	   `, [req.body.Viewing_user]);
 	console.log(avgRatings.rowCount);
 	let num = 0;
 	for (let i = 0; i < avgRatings.rowCount; i++) {
@@ -421,8 +421,8 @@ User.SpecificUser = async (req, res) => {
 	console.log("avg : " + finalAvg);
 	const followers = await sql.query(`SELECT COUNT(*) AS followers FROM "followusers"
 	 where user_id = $1 
-	  `, [req.params.id]);
-	sql.query(`SELECT *  FROM "user" WHERE  id = $1`, [req.params.id], (err, result) => {
+	  `, [req.body.Viewing_user]);
+	sql.query(`SELECT *  FROM "user" WHERE  id = $1`, [req.body.Viewing_user], (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
@@ -431,6 +431,9 @@ User.SpecificUser = async (req, res) => {
 				err
 			});
 		} else {
+			const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+				, [req.body.Viewing_user, req.body.logged_in_user, 'view profile', 'user'])
 			res.json({
 				message: "User Details",
 				status: true,
@@ -594,6 +597,57 @@ ORDER BY months.month;
 				message: "Monthly added Users",
 				status: true,
 				result: result.rows,
+			});
+		}
+	});
+
+}
+
+
+User.Delete = async (req, res) => {
+	const data = await sql.query(`select * from "user" WHERE id = $1 `
+		, [req.body.user_id])
+	if (data.rows.length === 1) {
+		sql.query(`DELETE FROM "user" WHERE id = ${req.body.user_id};`, (err, result) => {
+			if (err) {
+				res.json({
+					message: "Try Again",
+					status: false,
+					err
+				});
+			} else {
+				const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+					, [req.body.user_id, data.rows[0].id, 'delete user', 'user'])
+				res.json({
+					message: "User Deleted Successfully!",
+					status: true,
+					result: data.rows,
+
+				});
+			}
+		});
+	} else {
+		res.json({
+			message: "Not Found",
+			status: false,
+		});
+	}
+}
+
+User.DeleteAll = async (req, res) => {
+	sql.query(`DELETE FROM "user"`, (err, result) => {
+		if (err) {
+			res.json({
+				message: "Try Again",
+				status: false,
+				err
+			});
+		} else {
+			res.json({
+				message: "ALL Users Deleted Successfully!",
+				status: true,
+
 			});
 		}
 	});

@@ -132,14 +132,22 @@ report_items.ViewAll = async (req, res) => {
 	let page = req.body.page;
 	let result;
 	if (!page || !limit) {
-		result = await sql.query(`SELECT "report_items".id AS report_id, "report_items".createdat AS report_create_by, 
-		 "items".* AS item ,  "user"."id" AS user_id, "user"."username" AS user_name,
+		result = await sql.query(`SELECT 
+		"report_items".id AS id, "report_items".createdat AS report_create_by, 
+
+
+		 "items".name AS item_name ,    "items".id AS item_id, "items".price AS item_price, 
+		 "items".location AS item_location, "items".added_by AS item_added_by,
+		 "items".promoted AS item_promoted, "items".description AS description,
+
+		 "user"."id" AS user_id, "user"."username" AS user_name,
 		"user"."email" AS email ,"user"."image" AS image ,"user"."cover_image" AS cover_image ,
 		"user"."phone" AS phone , "user"."country_code" AS country_code
+
 		FROM "report_items"
 		JOIN "items" ON "report_items".report_id::integer = "items".id
 		JOIN "user" ON "user"."id" = "report_items".report_by::integer
-	 ORDER BY "id" DESC`);
+	 ORDER BY report_items."id" DESC`);
 	}
 	if (page && limit) {
 		limit = parseInt(limit);
