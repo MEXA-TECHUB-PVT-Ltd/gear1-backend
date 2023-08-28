@@ -161,19 +161,12 @@ report_items.ViewAll = async (req, res) => {
 		JOIN "user" ON "user"."id" = "report_items".report_by::integer ORDER BY "id" DESC
 		LIMIT $1 OFFSET $2 ` , [limit, offset]);
 	}
-	if (result.rowCount > 0) {
 		res.json({
 			message: "Item's Reports's Data",
 			status: true,
 			count: data.rows[0].count,
 			result: result.rows,
 		});
-	} else {
-		res.json({
-			message: "could not fetch",
-			status: false
-		})
-	}
 }
 
 report_items.getCount = async (req, res) => {

@@ -2,7 +2,7 @@ const { sql } = require("../config/db.config");
 
 const ads = function (ads) {
 	this.image = ads.image
-	this.ad_name= ads.ad_name
+	this.ad_name = ads.ad_name
 	this.link = ads.link;
 	this.screen_id = ads.screen_id;
 	this.active_status = ads.active_status;
@@ -40,7 +40,7 @@ ads.Add = async (req, res) => {
 
 				sql.query(`INSERT INTO ads (id ,ad_name, link, screen_id, active_status, createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3 ,$4,  'NOW()', 'NOW()') RETURNING * `
-					, [ req.body.ad_name,req.body.link, req.body.screen_id, 'active'], async (err, result) => {
+					, [req.body.ad_name, req.body.link, req.body.screen_id, 'active'], async (err, result) => {
 						if (err) {
 							console.log(err);
 							res.json({
@@ -52,7 +52,7 @@ ads.Add = async (req, res) => {
 						else {
 							const History = await sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
 							VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
-					, [ req.body.user_id , result.rows[0].id, 'add ads', 'ads'])			
+								, [req.body.user_id, result.rows[0].id, 'add ads', 'ads'])
 							res.json({
 								message: "Ad's added Successfully!",
 								status: true,
@@ -218,7 +218,7 @@ ads.GetAll = async (req, res) => {
 		let offset = (parseInt(page) - 1) * limit
 		result = await sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
 		ON "ads".screen_id = "screens".id ORDER BY "createdat" DESC
-		LIMIT $1 OFFSET $2 ` , [ limit, offset]);
+		LIMIT $1 OFFSET $2 ` , [limit, offset]);
 	}
 	if (result.rowCount > 0) {
 		for (let i = 0; i < result.rowCount; i++) {
@@ -252,7 +252,7 @@ ads.GetByScreen = async (req, res) => {
 	if (!page || !limit) {
 		result = await sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
 		ON "ads".screen_id = "screens".id where screen_id = $1 ORDER BY "createdat" DESC `,
-		[req.body.screen_id]);
+			[req.body.screen_id]);
 	}
 	if (page && limit) {
 		limit = parseInt(limit);
@@ -294,14 +294,14 @@ ads.GetActiveByScreen = async (req, res) => {
 	let result;
 	if (!page || !limit) {
 		result = await sql.query(`SELECT *  FROM "ads" WHERE screen_id = $1 AND active_status = $2`
-		, [req.body.screen_id, 'active']);
+			, [req.body.screen_id, 'active']);
 	}
 	if (page && limit) {
 		limit = parseInt(limit);
 		let offset = (parseInt(page) - 1) * limit
 		result = await sql.query(`SELECT "ads".*, "screens".name AS screen_name FROM "ads" JOIN "screens"
 		ON "ads".screen_id = "screens".id WHERE screen_id = $1 AND active_status = $2 ORDER BY "createdat" DESC
-		LIMIT $3 OFFSET $4 ` , [req.body.screen_id, 'active' ,limit, offset]);
+		LIMIT $3 OFFSET $4 ` , [req.body.screen_id, 'active', limit, offset]);
 	}
 	if (result.rowCount > 0) {
 		for (let i = 0; i < result.rowCount; i++) {
@@ -344,7 +344,7 @@ ads.Update = async (req, res) => {
 			const oldScreen = userData.rows[0].screen_id;
 			const oldActive_status = userData.rows[0].active_status;
 
-			let { adID, ad_name,link, screen_id, active_status } = req.body;
+			let { adID, ad_name, link, screen_id, active_status } = req.body;
 			if (link === undefined || link === '') {
 				link = oldLink;
 			}
@@ -401,8 +401,8 @@ ads.Update = async (req, res) => {
 ads.Delete = async (req, res) => {
 	const data = await sql.query(`select * from ads WHERE id = $1`
 		, [req.body.adID])
-	if (data.rows.length === 1) {
-		sql.query(`DELETE FROM ads WHERE id = ${req.body.adID};`, (err, result) => {
+	if (data.rows.length > 0) {
+		sql.query(`DELETE FROM ads WHERE id = ${req.body.adID};`, async (err, result) => {
 			if (err) {
 				res.json({
 					message: "Try Again",
@@ -410,6 +410,9 @@ ads.Delete = async (req, res) => {
 					err
 				});
 			} else {
+
+				const query1 = 'DELETE FROM report_ads WHERE report_id = $1 ';
+				const result1 = await sql.query(query1, [req.body.adID]);
 				res.json({
 					message: "Ad's Deleted Successfully!",
 					status: true,

@@ -605,54 +605,152 @@ ORDER BY months.month;
 
 
 User.Delete = async (req, res) => {
-	const data = await sql.query(`select * from "user" WHERE id = $1 `
-		, [req.body.user_id])
-	if (data.rows.length === 1) {
-		sql.query(`DELETE FROM "user" WHERE id = ${req.body.user_id};`, (err, result) => {
-			if (err) {
+	try {
+		const user_id = req.body.user_id;
+		if (!user_id) {
+			return (
 				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
-				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
-					, [req.body.user_id, data.rows[0].id, 'delete user', 'user'])
-				res.json({
-					message: "User Deleted Successfully!",
-					status: true,
-					result: data.rows,
+					message: "Please Provide user_id",
+					status: false
+				})
+			)
+		}
+		const query0 = 'DELETE FROM "user" where id = $1 ';
+		const result0 = await sql.query(query0, [user_id]);
 
-				});
-			}
-		});
-	} else {
+		const query = 'DELETE FROM items WHERE userid = $1 RETURNING id';
+		const result = await sql.query(query, [user_id]);
+		for (let i = 0; i < result.rows.length; i++) {
+
+			const query1 = 'DELETE FROM likeitems WHERE item_id = $1 RETURNING *';
+			const result1 = await sql.query(query1, [result.rows[i].id]);
+			const query2 = 'DELETE FROM saveitems WHERE item_id = $1 RETURNING *';
+			const result2 = await sql.query(query2, [result.rows[i].id]);
+
+			const query3 = 'DELETE FROM shareitems WHERE item_id = $1 RETURNING *';
+			const result3 = await sql.query(query3, [result.rows[i].id]);
+
+			const query4 = 'DELETE FROM report_items WHERE report_id = $1 RETURNING *';
+			const result4 = await sql.query(query4, [result.rows[i].id]);
+		}
+		const query1 = 'DELETE FROM likeitems WHERE user_id = $1 RETURNING *';
+		const result1 = await sql.query(query1, [user_id]);
+		const query2 = 'DELETE FROM saveitems WHERE user_id = $1 RETURNING *';
+		const result2 = await sql.query(query2, [user_id]);
+
+		const query3 = 'DELETE FROM shareitems WHERE user_id = $1 RETURNING *';
+		const result3 = await sql.query(query3, [user_id]);
+
+
+		const query5 = 'DELETE FROM orders  where user_id = $1';
+		const result5 = await sql.query(query5, [user_id]);
+
+		const query6 = 'DELETE FROM report_ads  where report_by = $1';
+		const result6 = await sql.query(query6, [user_id]);
+
+		const query7 = 'DELETE FROM socialmedia where userid = $1';
+		const result7 = await sql.query(query7, [user_id]);
+
+		const query8 = 'DELETE FROM rateusers where rate_by_user_id = $1 OR user_id = $2';
+		const result8 = await sql.query(query8, [user_id,user_id ]);
+
+		const query9 = 'DELETE FROM history  where user_id = $1 OR action_id = $2';
+		const result9 = await sql.query(query9, [user_id, user_id]);
+
+		const query10 = 'DELETE FROM followusers where user_id = $1 OR  follow_by_user_id = $2';
+		const result10 = await sql.query(query10, [user_id, user_id]);
+
+
+		if (result.rowCount > 0) {
+			res.status(200).json({
+				message: "Deletion successfull",
+				status: true,
+				// deletedRecord: deletedEntries
+			})
+		}
+		else {
+			res.status(404).json({
+				message: "Could not delete . Record With this Id may not found or req.body may be empty",
+				status: false,
+			})
+		}
+
+	}
+	catch (err) {
 		res.json({
-			message: "Not Found",
+			message: "Error",
 			status: false,
-		});
+			error: err.message
+		})
 	}
 }
 
+
 User.DeleteAll = async (req, res) => {
-	sql.query(`DELETE FROM "user"`, (err, result) => {
-		if (err) {
-			res.json({
-				message: "Try Again",
-				status: false,
-				err
-			});
-		} else {
-			res.json({
-				message: "ALL Users Deleted Successfully!",
+	try {
+		const query = 'DELETE FROM "user"  ';
+		const result = await sql.query(query);
+
+		const query0 = 'DELETE FROM items  ';
+		const result0 = await sql.query(query0);
+
+
+		const query1 = 'DELETE FROM likeitems  ';
+		const result1 = await sql.query(query1);
+		const query2 = 'DELETE FROM saveitems  ';
+		const result2 = await sql.query(query2);
+
+		const query3 = 'DELETE FROM shareitems ';
+		const result3 = await sql.query(query3);
+
+		const query4 = 'DELETE FROM report_items ';
+		const result4 = await sql.query(query4);
+
+		const query5 = 'DELETE FROM orders  ';
+		const result5 = await sql.query(query5);
+
+		const query6 = 'DELETE FROM report_ads  ';
+		const result6 = await sql.query(query6);
+
+		const query7 = 'DELETE FROM socialmedia ';
+		const result7 = await sql.query(query7);
+
+		const query8 = 'DELETE FROM rateusers ';
+		const result8 = await sql.query(query8);
+
+		const query9 = 'DELETE FROM history  ';
+		const result9 = await sql.query(query9);
+
+		const query10 = 'DELETE FROM followusers';
+		const result10 = await sql.query(query10);
+
+
+
+		if (result.rowCount > 0) {
+			res.status(200).json({
+				message: "Deletion successfull",
 				status: true,
-
-			});
+				// deletedRecord: deletedEntries
+			})
 		}
-	});
+		else {
+			res.status(404).json({
+				message: "Could not delete . Record With this Id may not found or req.body may be empty",
+				status: false,
+			})
+		}
 
+	}
+	catch (err) {
+		res.json({
+			message: "Error",
+			status: false,
+			error: err.message
+		})
+	}
 }
+
+
 
 
 module.exports = User;

@@ -82,8 +82,10 @@ Items.Add = async (req, res) => {
 										const startTime = new Date(req.body.start_date);
 										console.log(startTime);
 										const endTime = new Date(startTime.getTime() + 1000);
-										let job1 = schedule.scheduleJob({ start: startTime, end: endTime, 
-											rule: '*/1 * * * * *' }, async function () {
+										let job1 = schedule.scheduleJob({
+											start: startTime, end: endTime,
+											rule: '*/1 * * * * *'
+										}, async function () {
 											console.log('Job1')
 											const userData = await sql.query(`UPDATE "items" SET promoted = $1
 									 WHERE id = $2;`, ['true', result.rows[0].id]);
@@ -98,7 +100,7 @@ Items.Add = async (req, res) => {
 										let job = schedule.scheduleJob({ start: startTimeFalse, end: endTimeFalse, rule: '*/1 * * * * *' }, async function () {
 											const userData = await sql.query(`UPDATE "items" SET promoted = $1
 									 WHERE id = $2;`, ['false', result.rows[0].id]);
-									 console.log('Job1')
+											console.log('Job1')
 											console.log('status Changes After!');
 										});
 										console.log(job);
@@ -824,7 +826,7 @@ Items.GetAllItems = async (req, res) => {
 		console.log(chunkedArray);
 
 		res.json({
-			message: "User's items data",
+			message: "User's items data!",
 			status: true,
 			count: finalArray.length,
 			result: chunkedArray
@@ -1023,7 +1025,7 @@ Items.Update = async (req, res) => {
 					} else {
 						if (result.rowCount > 0) {
 							const data = await sql.query(`select * from "items" where id = $1`, [req.body.Item_ID]);
-							if (req.body.promoted == 'true' || req.body.promoted == true) { 
+							if (req.body.promoted == 'true' || req.body.promoted == true) {
 								// 86400000 ===== 24 hours
 								const startTime = new Date(req.body.start_date);
 								console.log(startTime);
@@ -1101,43 +1103,103 @@ Items.Delete = async (req, res) => {
 	}
 }
 
+
 Items.DeleteAll_User = async (req, res) => {
-		sql.query(`DELETE FROM items WHERE userid = ${req.body.user_id};`, (err, result) => {
-			if (err) {
+	try {
+		const user_id = req.body.user_id;
+		if (!user_id) {
+			return (
 				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
-				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
-					, [req.body.user_ID, '', 'delete All items', 'items'])
-				res.json({
-					message: "All Item of a User Deleted Successfully!",
-					status: true,
+					message: "Please Provide user_id",
+					status: false
+				})
+			)
+		}
+		const query = 'DELETE FROM items WHERE userid = $1 RETURNING id';
+		const result = await sql.query(query, [user_id]);
+		for (let i = 0; i < result.rows.length; i++) {
 
-				});
-			}
-		});
+			const query1 = 'DELETE FROM likeitems WHERE item_id = $1 RETURNING *';
+			const result1 = await sql.query(query1, [result.rows[i].id]);
+			const query2 = 'DELETE FROM saveitems WHERE item_id = $1 RETURNING *';
+			const result2 = await sql.query(query2, [result.rows[i].id]);
+
+			const query3 = 'DELETE FROM shareitems WHERE item_id = $1 RETURNING *';
+			const result3 = await sql.query(query3, [result.rows[i].id]);
+
+			const query4 = 'DELETE FROM report_items WHERE report_id = $1 RETURNING *';
+			const result4 = await sql.query(query4, [result.rows[i].id]);
+		}
+
+		if (result.rowCount > 0) {
+			res.status(200).json({
+				message: "Deletion successfull",
+				status: true,
+				// deletedRecord: deletedEntries
+			})
+		}
+		else {
+			res.status(404).json({
+				message: "Could not delete . Record With this Id may not found or req.body may be empty",
+				status: false,
+			})
+		}
+
+	}
+	catch (err) {
+		res.json({
+			message: "Error",
+			status: false,
+			error: err.message
+		})
+	}
 }
+
+
+
+
+
 Items.DeleteAll = async (req, res) => {
-		sql.query(`DELETE FROM items`, (err, result) => {
-			if (err) {
-				res.json({
-					message: "Try Again",
-					status: false,
-					err
-				});
-			} else {
-				res.json({
-					message: "All Items Deleted Successfully!",
-					status: true,
+	try {
+		const query = 'DELETE FROM items  RETURNING id';
+		const result = await sql.query(query);
 
-				});
-			}
-		});
+			const query1 = 'DELETE FROM likeitems  RETURNING *';
+			const result1 = await sql.query(query1);
+			const query2 = 'DELETE FROM saveitems  RETURNING *';
+			const result2 = await sql.query(query2);
+
+			const query3 = 'DELETE FROM shareitems RETURNING *';
+			const result3 = await sql.query(query3);
+
+			const query4 = 'DELETE FROM report_items  RETURNING *';
+			const result4 = await sql.query(query4);
+		
+
+		if (result.rowCount > 0) {
+			res.status(200).json({
+				message: "Deletion successfull",
+				status: true,
+				// deletedRecord: deletedEntries
+			})
+		}
+		else {
+			res.status(404).json({
+				message: "Could not delete . Record With this Id may not found or req.body may be empty",
+				status: false,
+			})
+		}
+
+	}
+	catch (err) {
+		res.json({
+			message: "Error",
+			status: false,
+			error: err.message
+		})
+	}
 }
+
 
 
 module.exports = Items;
