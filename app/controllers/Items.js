@@ -9,6 +9,24 @@ exports.Add = (req, res) => {
   }  
   Items.Add( req, res);
 };
+exports.DeleteAll= (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Items.DeleteAll( req, res);
+};
+exports.DeleteAll_User = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Items.DeleteAll_User( req, res);
+};
 exports.Delete = (req, res) => {
   if (!req.body) {
     res.json({

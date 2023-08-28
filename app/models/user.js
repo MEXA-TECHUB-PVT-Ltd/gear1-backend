@@ -377,38 +377,38 @@ User.ChangeNumber = async (req, res) => {
 User.SpecificUser = async (req, res) => {
 	const followings = await sql.query(`SELECT COUNT(*) AS followings FROM "followusers"
 	where follow_by_user_id = $1 
-	 `, [req.params.id]);
+	 `, [req.body.Viewing_user]);
 	const items = await sql.query(`SELECT COUNT(*) AS items FROM "items"
 	 where userid = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const likedItems = await sql.query(`SELECT COUNT(*) AS liked_items FROM "likeitems"
 	 where user_id = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const social_media = await sql.query(`SELECT *  FROM "socialmedia" 
 	 where userid = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 
 
 
 	const reported_items = await sql.query(`SELECT COUNT(*) AS reported_items  FROM "report_items" 
 	 where report_by = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const saved_items = await sql.query(`SELECT COUNT(*) AS saved_items  FROM "saveitems" 
 	 where user_id = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const shared_items = await sql.query(`SELECT COUNT(*) AS shared_items  FROM "shareitems" 
 	 where user_id = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const report_ads = await sql.query(`SELECT COUNT(*) AS report_ads  FROM "report_ads" 
 	 where report_by = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 
 	const ratings = await sql.query(`SELECT COUNT(*) AS totalRatings FROM "rateusers"
 	 where user_id = $1 
-	  `, [req.params.id]);
+	  `, [req.body.Viewing_user]);
 	const avgRatings = await sql.query(`SELECT rating FROM "rateusers"
 	  where user_id = $1 
-	   `, [req.params.id]);
+	   `, [req.body.Viewing_user]);
 	console.log(avgRatings.rowCount);
 	let num = 0;
 	for (let i = 0; i < avgRatings.rowCount; i++) {
@@ -421,8 +421,8 @@ User.SpecificUser = async (req, res) => {
 	console.log("avg : " + finalAvg);
 	const followers = await sql.query(`SELECT COUNT(*) AS followers FROM "followusers"
 	 where user_id = $1 
-	  `, [req.params.id]);
-	sql.query(`SELECT *  FROM "user" WHERE  id = $1`, [req.params.id], (err, result) => {
+	  `, [req.body.Viewing_user]);
+	sql.query(`SELECT *  FROM "user" WHERE  id = $1`, [req.body.Viewing_user], (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
@@ -431,6 +431,9 @@ User.SpecificUser = async (req, res) => {
 				err
 			});
 		} else {
+			const History = sql.query(`INSERT INTO history (id ,user_id, action_id, action_type, action_table ,createdAt ,updatedAt )
+				VALUES (DEFAULT, $1  ,  $2, $3,  $4 , 'NOW()', 'NOW()') RETURNING * `
+				, [req.body.Viewing_user, req.body.logged_in_user, 'view profile', 'user'])
 			res.json({
 				message: "User Details",
 				status: true,
@@ -599,6 +602,155 @@ ORDER BY months.month;
 	});
 
 }
+
+
+User.Delete = async (req, res) => {
+	try {
+		const user_id = req.body.user_id;
+		if (!user_id) {
+			return (
+				res.json({
+					message: "Please Provide user_id",
+					status: false
+				})
+			)
+		}
+		const query0 = 'DELETE FROM "user" where id = $1 ';
+		const result0 = await sql.query(query0, [user_id]);
+
+		const query = 'DELETE FROM items WHERE userid = $1 RETURNING id';
+		const result = await sql.query(query, [user_id]);
+		for (let i = 0; i < result.rows.length; i++) {
+
+			const query1 = 'DELETE FROM likeitems WHERE item_id = $1 RETURNING *';
+			const result1 = await sql.query(query1, [result.rows[i].id]);
+			const query2 = 'DELETE FROM saveitems WHERE item_id = $1 RETURNING *';
+			const result2 = await sql.query(query2, [result.rows[i].id]);
+
+			const query3 = 'DELETE FROM shareitems WHERE item_id = $1 RETURNING *';
+			const result3 = await sql.query(query3, [result.rows[i].id]);
+
+			const query4 = 'DELETE FROM report_items WHERE report_id = $1 RETURNING *';
+			const result4 = await sql.query(query4, [result.rows[i].id]);
+		}
+		const query1 = 'DELETE FROM likeitems WHERE user_id = $1 RETURNING *';
+		const result1 = await sql.query(query1, [user_id]);
+		const query2 = 'DELETE FROM saveitems WHERE user_id = $1 RETURNING *';
+		const result2 = await sql.query(query2, [user_id]);
+
+		const query3 = 'DELETE FROM shareitems WHERE user_id = $1 RETURNING *';
+		const result3 = await sql.query(query3, [user_id]);
+
+
+		const query5 = 'DELETE FROM orders  where user_id = $1';
+		const result5 = await sql.query(query5, [user_id]);
+
+		const query6 = 'DELETE FROM report_ads  where report_by = $1';
+		const result6 = await sql.query(query6, [user_id]);
+
+		const query7 = 'DELETE FROM socialmedia where userid = $1';
+		const result7 = await sql.query(query7, [user_id]);
+
+		const query8 = 'DELETE FROM rateusers where rate_by_user_id = $1 OR user_id = $2';
+		const result8 = await sql.query(query8, [user_id,user_id ]);
+
+		const query9 = 'DELETE FROM history  where user_id = $1 OR action_id = $2';
+		const result9 = await sql.query(query9, [user_id, user_id]);
+
+		const query10 = 'DELETE FROM followusers where user_id = $1 OR  follow_by_user_id = $2';
+		const result10 = await sql.query(query10, [user_id, user_id]);
+
+
+		if (result.rowCount > 0) {
+			res.status(200).json({
+				message: "Deletion successfull",
+				status: true,
+				// deletedRecord: deletedEntries
+			})
+		}
+		else {
+			res.status(404).json({
+				message: "Could not delete . Record With this Id may not found or req.body may be empty",
+				status: false,
+			})
+		}
+
+	}
+	catch (err) {
+		res.json({
+			message: "Error",
+			status: false,
+			error: err.message
+		})
+	}
+}
+
+
+User.DeleteAll = async (req, res) => {
+	try {
+		const query = 'DELETE FROM "user"  ';
+		const result = await sql.query(query);
+
+		const query0 = 'DELETE FROM items  ';
+		const result0 = await sql.query(query0);
+
+
+		const query1 = 'DELETE FROM likeitems  ';
+		const result1 = await sql.query(query1);
+		const query2 = 'DELETE FROM saveitems  ';
+		const result2 = await sql.query(query2);
+
+		const query3 = 'DELETE FROM shareitems ';
+		const result3 = await sql.query(query3);
+
+		const query4 = 'DELETE FROM report_items ';
+		const result4 = await sql.query(query4);
+
+		const query5 = 'DELETE FROM orders  ';
+		const result5 = await sql.query(query5);
+
+		const query6 = 'DELETE FROM report_ads  ';
+		const result6 = await sql.query(query6);
+
+		const query7 = 'DELETE FROM socialmedia ';
+		const result7 = await sql.query(query7);
+
+		const query8 = 'DELETE FROM rateusers ';
+		const result8 = await sql.query(query8);
+
+		const query9 = 'DELETE FROM history  ';
+		const result9 = await sql.query(query9);
+
+		const query10 = 'DELETE FROM followusers';
+		const result10 = await sql.query(query10);
+
+
+
+		if (result.rowCount > 0) {
+			res.status(200).json({
+				message: "Deletion successfull",
+				status: true,
+				// deletedRecord: deletedEntries
+			})
+		}
+		else {
+			res.status(404).json({
+				message: "Could not delete . Record With this Id may not found or req.body may be empty",
+				status: false,
+			})
+		}
+
+	}
+	catch (err) {
+		res.json({
+			message: "Error",
+			status: false,
+			error: err.message
+		})
+	}
+}
+
+
 
 
 module.exports = User;
