@@ -233,20 +233,14 @@ Categories.GetAllCategories = async (req, res) => {
 					}
 					for (var i = 2; i < ads.rowCount; i++) {
 						category.rows.push(ads.rows[i]);
+						ads.rows[i] = {
+							...ads.rows[i],
+							type: 'ad'
+						}
 					}
 				}
 			}
 
-		// if (category.rowCount > 0) {
-		// 	if (ads.rowCount > 0) {
-		// 		ads.rows[0] = {
-		// 			...ads.rows[0],
-		// 			type: 'ad'
-		// 		}
-		// 		category.rows.splice(0, 0, ads.rows[0]);
-		// 		rowCount++;
-		// 	}
-		// }
 
 		// if (category.rowCount > 7  ) {
 		// 	console.log("Here1")
