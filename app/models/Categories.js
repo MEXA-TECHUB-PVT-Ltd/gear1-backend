@@ -204,7 +204,26 @@ Categories.GetAllCategories = async (req, res) => {
 			for (var i = 1; i < ads.rowCount; i++) {
 				category.rows.push(ads.rows[i]);
 			}
-		} else
+		} else if (category.rowCount === 6) {
+			if (ads.rowCount > 0) {
+				ads.rows[0] = {
+					...ads.rows[0],
+					type: 'ad'
+				}
+				category.rows.splice(0, 0, ads.rows[0]);
+				rowCount++;
+			}
+
+			for (var i = 1; i < ads.rowCount; i++) {
+				ads.rows[i] = {
+					...ads.rows[i],
+					type: 'ad'
+				}
+				category.rows.push(ads.rows[i]);
+			}
+
+		}
+		else
 			if (category.rowCount > 0 && category.rowCount < 6) {
 
 				if (ads.rowCount > 0) {
@@ -217,6 +236,10 @@ Categories.GetAllCategories = async (req, res) => {
 				}
 
 				for (var i = 1; i < ads.rowCount; i++) {
+					ads.rows[i] = {
+						...ads.rows[i],
+						type: 'ad'
+					}
 					category.rows.push(ads.rows[i]);
 				}
 			} else {
@@ -228,25 +251,28 @@ Categories.GetAllCategories = async (req, res) => {
 							type: 'ad'
 						}
 						category.rows.splice(0, 0, ads.rows[0]);
-						category.rows.splice(7, 0, ads.rows[1]);
 						rowCount++;
 					}
+
+					if (ads.rowCount > 1) {
+						ads.rows[1] = {
+							...ads.rows[1],
+							type: 'ad'
+						}
+						category.rows.splice(7, 0, ads.rows[1]);
+						rowCount++
+
+					}
 					for (var i = 2; i < ads.rowCount; i++) {
+						ads.rows[i] = {
+							...ads.rows[i],
+							type: 'ad'
+						}
 						category.rows.push(ads.rows[i]);
 					}
 				}
 			}
 
-		// if (category.rowCount > 0) {
-		// 	if (ads.rowCount > 0) {
-		// 		ads.rows[0] = {
-		// 			...ads.rows[0],
-		// 			type: 'ad'
-		// 		}
-		// 		category.rows.splice(0, 0, ads.rows[0]);
-		// 		rowCount++;
-		// 	}
-		// }
 
 		// if (category.rowCount > 7  ) {
 		// 	console.log("Here1")
