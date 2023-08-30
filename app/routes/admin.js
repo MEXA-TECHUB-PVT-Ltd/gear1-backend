@@ -8,6 +8,7 @@ module.exports = app => {
     router.post("/sign_in_without_otp", admin.login);
     router.post("/sign_up", admin.signUp);
     router.post("/verify_OTP_sign_in", admin.verifyOTPSignIn);
+    router.put("/resetPassword_without_Otp", admin.passwordReset);
     router.put("/resetPassword", admin.VerifyEmailChangePassword);
     router.put("/verify_OTP_change_password", admin.verifyOTPChangePassword);
     router.put("/update_profile", admin.updateProfile);
