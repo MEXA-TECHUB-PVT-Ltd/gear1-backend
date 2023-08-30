@@ -19,6 +19,15 @@ exports.addImage = (req, res) => {
   }  
   Categories.addImage( req, res);
 };
+exports.GetActiveBannersCategories = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  Categories.GetActiveBannersCategories( req, res);
+};
 exports.Update = (req, res) => {
   if (!req.body) {
     res.json({

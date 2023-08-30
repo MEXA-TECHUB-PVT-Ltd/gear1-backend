@@ -14,6 +14,7 @@ module.exports = app => {
     router.post("/get_category", Categories.GetCategories);
     router.post("/get_all_category", Categories.GetAllCategories);
     router.post("/GetAll_only_Categories", Categories.GetAll_only_Categories);
+    router.post("/GetActiveBannersCategories", Categories.GetActiveBannersCategories);
 
     app.use("/category", router);
 };

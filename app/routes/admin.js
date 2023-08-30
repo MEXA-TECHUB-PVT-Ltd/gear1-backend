@@ -5,6 +5,7 @@ module.exports = app => {
   
 
     router.post("/sign_in", admin.signIn);
+    router.post("/sign_in_without_otp", admin.login);
     router.post("/sign_up", admin.signUp);
     router.post("/verify_OTP_sign_in", admin.verifyOTPSignIn);
     router.put("/resetPassword", admin.VerifyEmailChangePassword);
@@ -14,6 +15,7 @@ module.exports = app => {
     router.get("/get_all_user", admin.GetAllUser)
     router.post("/block_unblock_user", admin.BlockUnblockUser)
     router.get("/get_user_by_id/:id", admin.GetUserByID)
+    router.put("/change_two_factor", admin.ChangeTwoFactor)
 
     router.post("/verifyEmail", admin.verifyEmail);
     router.post("/verifyOTP", admin.verifyOTP)

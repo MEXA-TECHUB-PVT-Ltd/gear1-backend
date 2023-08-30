@@ -20,7 +20,24 @@ exports.signIn = (req, res) => {
   }  
   otp.VerifyEmailSignIn( req, res);
 };
-
+exports.ChangeTwoFactor = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  admin.ChangeTwoFactor( req, res);
+};
+exports.login = (req, res) => {
+  if (!req.body) {
+    res.json({
+      message: "Content can not be empty!",
+      status: false,
+     });
+  }  
+  admin.login( req, res);
+};
 exports.GetAdminByID = (req, res) => {
   if (!req.body) {
     res.json({
