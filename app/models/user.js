@@ -661,7 +661,7 @@ User.Delete = async (req, res) => {
 		const result10 = await sql.query(query10, [user_id, user_id]);
 
 
-		if (result.rowCount > 0) {
+		if (result0.rowCount > 0) {
 			res.status(200).json({
 				message: "Deletion successfull",
 				status: true,
