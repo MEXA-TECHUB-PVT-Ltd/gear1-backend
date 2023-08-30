@@ -17,6 +17,7 @@ Categories.Add = async (req, res) => {
         id SERIAL,
         name text NOT NULL,
 		image text,
+		banners text[],
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id))  ` , (err, result) => {
@@ -27,9 +28,9 @@ Categories.Add = async (req, res) => {
 					err
 				});
 			} else {
-				sql.query(`INSERT INTO "categories" (id, name , createdAt ,updatedAt )
-                            VALUES (DEFAULT, $1 , 'NOW()', 'NOW()') 
-							RETURNING * `, [req.body.name], (err, result) => {
+				sql.query(`INSERT INTO "categories" (id, name ,banners, createdAt ,updatedAt )
+                            VALUES (DEFAULT, $1, $2 , 'NOW()', 'NOW()') 
+							RETURNING * `, [req.body.name, req.body.banners], (err, result) => {
 					if (err) {
 						console.log(err);
 						res.json({
@@ -110,8 +111,19 @@ Categories.addImage = async (req, res) => {
 
 
 Categories.GetCategories = (req, res) => {
-	sql.query(`SELECT * FROM "categories" WHERE id = ${req.body.Category_ID};`, (err, result) => {
+	sql.query(`SELECT  mp.*, (
+		SELECT json_agg( 
+		   json_build_object('id',g.id,'link', g.link,
+		   "image",g.image,'active_status',g.active_status
+		   )
+			   )
+			   FROM ads g
+				WHERE g.id = ANY(mp.banners::integer[])
+				 ) AS banners 
+				   FROM categories mp WHERE id = ${req.body.Category_ID}
+	 ORDER BY "createdat" DESC`, (err, result) => {
 		if (err) {
+			console.log(err)
 			res.json({
 				message: "Try Again",
 				status: false,
@@ -127,18 +139,69 @@ Categories.GetCategories = (req, res) => {
 	});
 }
 
+Categories.GetActiveBannersCategories = (req, res) => {
+	sql.query(`SELECT  mp.*, (
+		SELECT json_agg( 
+		   json_build_object('id',g.id,'link', g.link,
+		   "image",g.image,'active_status',g.active_status
+		   )
+			   )
+			   FROM ads g
+				WHERE g.id = ANY(mp.banners::integer[]) AND g.active_status = 'active'
+				 ) AS banners 
+				   FROM categories mp WHERE id = ${req.body.Category_ID}
+	 ORDER BY "createdat" DESC`, (err, result) => {
+		if (err) {
+			console.log(err)
+			res.json({
+				message: "Try Again",
+				status: false,
+				err
+			});
+		} else {
+			res.json({
+				message: "Specific Categories Details",
+				status: true,
+				result: result.rows
+			});
+		}
+	});
+}
+
+
+
 Categories.GetAll_only_Categories = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "categories"`);
 	let limit = '10';
 	let page = req.body.page;
 	let result;
 	if (!page || !limit) {
-		result = await sql.query(`SELECT * FROM "categories" ORDER by createdat DESC `);
+		result = await sql.query(`SELECT  mp.*, (
+			SELECT json_agg( 
+			   json_build_object('id',g.id,'link', g.link,
+			   "image",g.image,'active_status',g.active_status
+			   )
+				   )
+				   FROM ads g
+					WHERE g.id = ANY(mp.banners::integer[])
+					 ) AS banners 
+					   FROM categories mp
+		 ORDER BY "createdat" DESC  `);
 	}
 	if (page && limit) {
 		limit = parseInt(limit);
 		let offset = (parseInt(page) - 1) * limit
-		result = await sql.query(`SELECT * FROM "categories" ORDER by createdat DESC 
+		result = await sql.query(`SELECT  mp.*, (
+			SELECT json_agg( 
+			   json_build_object('id',g.id,'link', g.link,
+			   "image",g.image,'active_status',g.active_status
+			   )
+				   )
+				   FROM ads g
+					WHERE g.id = ANY(mp.banners::integer[])
+					 ) AS banners 
+					   FROM categories mp
+		 ORDER BY "createdat" DESC 
 		LIMIT $1 OFFSET $2 ` , [limit, offset]);
 	}
 	if (result.rows) {
@@ -167,13 +230,34 @@ Categories.GetAllCategories = async (req, res) => {
 	let category;
 	let ads;
 	if (!page || !limit) {
-		category = await sql.query(`SELECT * FROM "categories" ORDER BY "createdat" DESC`);
+		category = await sql.query(`
+		 SELECT  mp.*, (
+			SELECT json_agg( 
+			   json_build_object('id',g.id,'link', g.link
+			   )
+				   )
+				   FROM ads g
+					WHERE g.id = ANY(mp.banners::integer[])
+					 ) AS banners 
+					   FROM categories mp
+		 ORDER BY "createdat" DESC
+	`);
 	}
 	if (page && limit) {
 		const data = await sql.query(`SELECT COUNT(*) AS count FROM "categories"`);
 		limit = parseInt(limit);
 		let offset = (parseInt(page) - 1) * limit
-		category = await sql.query(`SELECT * FROM "categories" ORDER BY "createdat" DESC
+		category = await sql.query(`SELECT  mp.*, (
+			SELECT json_agg( 
+			   json_build_object('id',g.id,'link', g.link,
+			   "image",g.image,'active_status',g.active_status
+			   )
+				   )
+				   FROM ads g
+					WHERE g.id = ANY(mp.banners::integer[])
+					 ) AS banners 
+					   FROM categories mp
+		 ORDER BY "createdat" DESC
 		LIMIT $1 OFFSET $2 ` , [limit, offset]);
 	}
 	let rowCount = category.rowCount;
@@ -192,27 +276,27 @@ Categories.GetAllCategories = async (req, res) => {
 
 		if (category.rowCount === 0) {
 
-			if (ads.rowCount > 0) {
-				ads.rows[0] = {
-					...ads.rows[0],
-					type: 'ad'
-				}
-				category.rows.splice(0, 0, ads.rows[0]);
-				rowCount++;
-			}
+			// if (ads.rowCount > 0) {
+			// 	ads.rows[0] = {
+			// 		...ads.rows[0],
+			// 		type: 'ad'
+			// 	}
+			// 	category.rows.splice(0, 0, ads.rows[0]);
+			// 	rowCount++;
+			// }
 
 			for (var i = 1; i < ads.rowCount; i++) {
 				category.rows.push(ads.rows[i]);
 			}
 		} else if (category.rowCount === 6) {
-			if (ads.rowCount > 0) {
-				ads.rows[0] = {
-					...ads.rows[0],
-					type: 'ad'
-				}
-				category.rows.splice(0, 0, ads.rows[0]);
-				rowCount++;
-			}
+			// if (ads.rowCount > 0) {
+			// 	ads.rows[0] = {
+			// 		...ads.rows[0],
+			// 		type: 'ad'
+			// 	}
+			// 	category.rows.splice(0, 0, ads.rows[0]);
+			// 	rowCount++;
+			// }
 
 			for (var i = 1; i < ads.rowCount; i++) {
 				ads.rows[i] = {
@@ -226,14 +310,14 @@ Categories.GetAllCategories = async (req, res) => {
 		else
 			if (category.rowCount > 0 && category.rowCount < 6) {
 
-				if (ads.rowCount > 0) {
-					ads.rows[0] = {
-						...ads.rows[0],
-						type: 'ad'
-					}
-					category.rows.splice(0, 0, ads.rows[0]);
-					rowCount++;
-				}
+				// if (ads.rowCount > 0) {
+				// 	ads.rows[0] = {
+				// 		...ads.rows[0],
+				// 		type: 'ad'
+				// 	}
+				// 	category.rows.splice(0, 0, ads.rows[0]);
+				// 	rowCount++;
+				// }
 
 				for (var i = 1; i < ads.rowCount; i++) {
 					ads.rows[i] = {
@@ -244,26 +328,26 @@ Categories.GetAllCategories = async (req, res) => {
 				}
 			} else {
 				if (category.rowCount > 6 && category.rowCount < 12) {
-					console.log("ads.rowCount");
+					// console.log("ads.rowCount");
+					// if (ads.rowCount > 0) {
+					// 	ads.rows[0] = {
+					// 		...ads.rows[0],
+					// 		type: 'ad'
+					// 	}
+					// 	category.rows.splice(0, 0, ads.rows[0]);
+					// 	rowCount++;
+					// }
+
 					if (ads.rowCount > 0) {
 						ads.rows[0] = {
 							...ads.rows[0],
 							type: 'ad'
 						}
-						category.rows.splice(0, 0, ads.rows[0]);
-						rowCount++;
-					}
-
-					if (ads.rowCount > 1) {
-						ads.rows[1] = {
-							...ads.rows[1],
-							type: 'ad'
-						}
-						category.rows.splice(7, 0, ads.rows[1]);
+						category.rows.splice(6, 0, ads.rows[0]);
 						rowCount++
 
 					}
-					for (var i = 2; i < ads.rowCount; i++) {
+					for (var i = 1; i < ads.rowCount; i++) {
 						ads.rows[i] = {
 							...ads.rows[i],
 							type: 'ad'
@@ -304,25 +388,33 @@ Categories.GetAllCategories = async (req, res) => {
 
 
 
-	} else if (category.rowCount === 12) {
+	} else if (category.rowCount >= 12) {
 		limit1 = 2;
 		let offset = (parseInt(page) - 1) * limit1
 		ads = await sql.query(`SELECT * FROM "ads" ORDER BY "createdat" DESC
 		LIMIT $1 OFFSET $2 ` , [limit1, offset]);
+		// if (ads.rowCount > 0) {
+		// 	ads.rows[0] = {
+		// 		...ads.rows[0],
+		// 		type: 'ad'
+		// 	}
+		// 	category.rows.splice(0, 0, ads.rows[0]);
+		// }
 		if (ads.rowCount > 0) {
 			ads.rows[0] = {
 				...ads.rows[0],
 				type: 'ad'
 			}
-			category.rows.splice(0, 0, ads.rows[0]);
+			category.rows.splice(6, 0, ads.rows[0]);
 		}
-		if (ads.rowCount === 2) {
+		if (ads.rowCount > 0) {
 			ads.rows[1] = {
 				...ads.rows[1],
 				type: 'ad'
 			}
-			category.rows.splice(7, 0, ads.rows[1]);
+			category.rows.push(ads.rows[1]);
 		}
+
 
 	}
 
@@ -358,13 +450,18 @@ Categories.Update = async (req, res) => {
 		if (userData.rowCount === 1) {
 
 			const oldName = userData.rows[0].name;
+			const oldbanners = userData.rows[0].banners;
 
-			let { Category_ID, name } = req.body;
+			let { Category_ID, name, banners } = req.body;
 			if (name === undefined || name === '') {
 				name = oldName;
 			}
-			sql.query(`UPDATE "categories" SET name = $1 WHERE id = $2;`,
-				[name, Category_ID], async (err, result) => {
+			if (banners === undefined || banners === '') {
+				banners = oldbanners;
+			}
+
+			sql.query(`UPDATE "categories" SET name = $1 , banners = $2 WHERE id = $3;`,
+				[name, banners, Category_ID], async (err, result) => {
 					if (err) {
 						console.log(err);
 						res.json({

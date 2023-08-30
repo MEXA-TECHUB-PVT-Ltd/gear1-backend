@@ -22,7 +22,7 @@ Logos.Add = async (req, res) => {
         active_status text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
-        PRIMARY KEY (id))  ` , (err, result) => {
+        PRIMARY KEY (id))  ` , async (err, result) => {
 			if (err) {
 				res.json({
 					message: "Try Again",
@@ -30,6 +30,19 @@ Logos.Add = async (req, res) => {
 					err
 				});
 			} else {
+				const userData = await sql.query(`select * from "logos" where screen_id = $1 AND active_status = $2`
+					, [req.body.screen_id, 'active']);
+
+				if (userData.rowCount > 0) {
+					for (const screenId of userData.rows) {
+						console.log(screenId.screen_id);
+						const userData = await sql.query(`UPDATE "logos" SET active_status = $1  where screen_id = $2`
+							, ['inactive', screenId.screen_id]);
+
+					}
+				}
+
+
 				sql.query(`INSERT INTO logos (id , link, screen_id, active_status, createdAt ,updatedAt )
                             VALUES (DEFAULT, $1  ,  $2, $3 ,  'NOW()', 'NOW()') RETURNING * `
 					, [req.body.link, req.body.screen_id, 'active'], (err, result) => {
@@ -166,7 +179,7 @@ Logos.GetByScreen = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS AllLogos FROM "logos"`)
 	sql.query(`SELECT "logos".*, "screens".name AS screen_name FROM "logos" JOIN "screens"
 	ON "logos".screen_id = "screens".id WHERE "logos".screen_id = $1 `,
-	[req.body.screen_id], (err, result) => {
+		[req.body.screen_id], (err, result) => {
 			if (err) {
 				console.log(err);
 				res.json({
@@ -195,8 +208,9 @@ Logos.GetActiveByScreen = async (req, res) => {
 
 	const data = await sql.query(`SELECT COUNT(*) AS AllAds FROM "logos"`)
 	sql.query(`SELECT "logos".*, "screens".name AS screen_name FROM "logos" JOIN "screens"
-	ON "logos".screen_id = "screens".id WHERE "logos".screen_id = $1 AND "logos".active_status = $2 ORDER BY "createdat" DESC `,
-	[req.body.screen_id, 'active'], (err, result) => {
+	ON "logos".screen_id = "screens".id 
+	WHERE "logos".screen_id = $1 AND "logos".active_status = $2 ORDER BY "createdat" DESC `,
+		[req.body.screen_id, 'active'], (err, result) => {
 			if (err) {
 				console.log(err);
 				res.json({
@@ -247,6 +261,22 @@ Logos.Update = async (req, res) => {
 			}
 			if (screen_id === undefined || screen_id === '') {
 				screen_id = oldScreen;
+			}
+
+			if (active_status === 'active') {
+				console.log(screen_id)
+				const userData = await sql.query(`select * from "logos" where screen_id = $1 AND active_status = $2`
+					, [screen_id, 'active']);
+				console.log("userData.rows");
+				console.log(userData.rows);
+				if (userData.rowCount > 0) {
+					for (const screenId of userData.rows) {
+						console.log(screenId.screen_id);
+						const userData = await sql.query(`UPDATE "logos" SET active_status = $1  where screen_id = $2`
+							, ['inactive', screenId.screen_id]);
+
+					}
+				}
 			}
 
 			sql.query(`UPDATE "logos" SET link = $1, screen_id = $2, 
@@ -305,6 +335,21 @@ Logos.UpdateStatus = async (req, res) => {
 			}
 			if (active_status === undefined || active_status === '') {
 				active_status = oldActive_status;
+			}
+			if (active_status === 'active') {
+				console.log(screen_id)
+				const userData = await sql.query(`select * from "logos" where screen_id = $1 AND active_status = $2`
+					, [screen_id, 'active']);
+				console.log("userData.rows");
+				console.log(userData.rows);
+				if (userData.rowCount > 0) {
+					for (const screenId of userData.rows) {
+						console.log(screenId.screen_id);
+						const userData = await sql.query(`UPDATE "logos" SET active_status = $1  where screen_id = $2`
+							, ['inactive', screenId.screen_id]);
+
+					}
+				}
 			}
 
 			sql.query(`UPDATE "logos" SET link = $1, screen_id = $2, 

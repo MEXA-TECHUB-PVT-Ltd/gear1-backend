@@ -11,6 +11,7 @@ admin.create = async (req, res) => {
         id SERIAL NOT NULL,
 		email text ,
         password text ,
+		two_factor boolean,
         createdAt timestamp,
         updatedAt timestamp ,
         PRIMARY KEY (id))  ` , async (err, result) => {
@@ -43,10 +44,10 @@ admin.create = async (req, res) => {
 					const salt = await bcrypt.genSalt(10);
 					let hashpassword = await bcrypt.hash(req.body.password, salt);
 					const { name, email } = req.body;
-					const query = `INSERT INTO "admin" (id,email,password  , createdat ,updatedat )
+					const query = `INSERT INTO "admin" (id,email,password , two_factor , createdat ,updatedat )
                             VALUES (DEFAULT, $1, $2, 'NOW()' ,'NOW()' ) RETURNING * `;
 					const foundResult = await sql.query(query,
-						[email, hashpassword]);
+						[email, hashpassword, true]);
 					if (foundResult.rows.length > 0) {
 						if (err) {
 							res.json({
@@ -82,7 +83,7 @@ admin.create = async (req, res) => {
 }
 
 admin.login = async function (req, res) {
-	sql.query(`SELECT * FROM "admin" WHERE email = $1`, [req.body.email], (err, result) => {
+	sql.query(`SELECT * FROM "admin" WHERE email = $1 `, [req.body.email], (err, result) => {
 		if (err) {
 			console.log(err);
 			res.json({
@@ -121,6 +122,7 @@ admin.login = async function (req, res) {
 		}
 	});
 }
+
 
 admin.GetAllUser = async (req, res) => {
 	const userData = await sql.query(`select COUNT(*) as count from "user"`);
@@ -234,6 +236,47 @@ admin.BlockUnblockUser = async (req, res) => {
 		}
 	}
 }
+
+admin.ChangeTwoFactor = async (req, res) => {
+	if (req.body.id === '') {
+		res.json({
+			message: "Please Enter id",
+			status: false,
+		});
+	} else {
+		const data = await sql.query(`select * from "admin" where id = $1`, [req.body.id]);
+		if (data.rowCount === 1) {
+				sql.query(`UPDATE "admin" SET two_factor = $1 WHERE id = $2;`, [req.body.two_factor, req.body.id], async (err, result) => {
+					if (err) {
+						res.json({
+							message: "Try Again",
+							status: false,
+							err
+						});
+					} else
+						if (result.rowCount === 1) {
+							const data = await sql.query(`select * from "admin" where id = $1`, [req.body.id]);
+							res.json({
+								message: "Admin Two Factor Updated Successfully!",
+								status: true,
+								result: data.rows,
+							});
+						} else if (result.rowCount === 0) {
+							res.json({
+								message: "Not Found",
+								status: false,
+							});
+						}
+				});
+		} else {
+			res.json({
+				message: "Not Found",
+				status: false,
+			});
+		}
+	}
+}
+
 
 admin.GetUserByID = (req, res) => {
 	sql.query(`SELECT * FROM "user" WHERE  id = $1`, [req.params.id], (err, result) => {

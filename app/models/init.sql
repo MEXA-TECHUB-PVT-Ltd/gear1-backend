@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS public.admin (
         id SERIAL NOT NULL,
         email text ,    
         password text ,
+        two_factor boolean,
         createdAt timestamp,
         updatedAt timestamp ,
         PRIMARY KEY (id));
@@ -68,6 +69,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
         id SERIAL,
         name text NOT NULL,
         image text,
+        banners text[],
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));
