@@ -199,11 +199,21 @@ CREATE TABLE IF NOT EXISTS public.report_ads (
 
 CREATE TABLE IF NOT EXISTS public.report_items (
         id SERIAL NOT NULL,
-		report_id text,
+	report_id text,
         report_by text,
+        report_reason text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id));
+
+CREATE TABLE IF NOT EXISTS public.user_block_list (
+        id SERIAL NOT NULL,
+        user_id INT,
+        blocked INT[],
+        createdAt TIMESTAMP DEFAULT NOW(),
+        updatedAt TIMESTAMP DEFAULT NOW(),
+        PRIMARY KEY (id)
+);
 
 
 CREATE TABLE IF NOT EXISTS public.history (

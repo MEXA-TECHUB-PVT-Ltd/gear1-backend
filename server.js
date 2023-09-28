@@ -57,7 +57,8 @@ require("./app/routes/Logos")(app);
 require("./app/routes/image_cache")(app);
 require("./app/routes/report_ads")(app);
 require("./app/routes/report_items")(app);
-
+app.use('/link', require('./app/routes/generateLinkRoute'))
+app.use('/block', require('./app/routes/blockUserRoute'))
 // set port, listen for requests
 const PORT = process.env.PORT || 3006;
 app.listen(PORT, () => {

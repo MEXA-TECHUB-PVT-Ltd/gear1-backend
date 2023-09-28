@@ -114,13 +114,13 @@ Categories.GetCategories = (req, res) => {
 	sql.query(`SELECT  mp.*, (
 		SELECT json_agg( 
 		   json_build_object('id',g.id,'link', g.link,
-		   "image",g.image,'active_status',g.active_status
+		   'image',g.image,'active_status',g.active_status
 		   )
 			   )
 			   FROM ads g
 				WHERE g.id = ANY(mp.banners::integer[])
 				 ) AS banners 
-				   FROM categories mp WHERE id = ${req.body.Category_ID}
+				   FROM categories mp WHERE id = ${req.body.Category_ID} s
 	 ORDER BY "createdat" DESC`, (err, result) => {
 		if (err) {
 			console.log(err)
@@ -143,7 +143,7 @@ Categories.GetActiveBannersCategories = (req, res) => {
 	sql.query(`SELECT  mp.*, (
 		SELECT json_agg( 
 		   json_build_object('id',g.id,'link', g.link,
-		   "image",g.image,'active_status',g.active_status
+		   'image',g.image,'active_status',g.active_status
 		   )
 			   )
 			   FROM ads g
@@ -179,7 +179,7 @@ Categories.GetAll_only_Categories = async (req, res) => {
 		result = await sql.query(`SELECT  mp.*, (
 			SELECT json_agg( 
 			   json_build_object('id',g.id,'link', g.link,
-			   "image",g.image,'active_status',g.active_status
+			   'image',g.image,'active_status',g.active_status
 			   )
 				   )
 				   FROM ads g
@@ -194,7 +194,7 @@ Categories.GetAll_only_Categories = async (req, res) => {
 		result = await sql.query(`SELECT  mp.*, (
 			SELECT json_agg( 
 			   json_build_object('id',g.id,'link', g.link,
-			   "image",g.image,'active_status',g.active_status
+			   'image',g.image,'active_status',g.active_status
 			   )
 				   )
 				   FROM ads g
@@ -222,8 +222,7 @@ Categories.GetAll_only_Categories = async (req, res) => {
 
 Categories.GetAllCategories = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "categories"`);
-	const Tads = await sql.query(`SELECT COUNT(*) AS count FROM "ads"`);
-
+	const Tads = await sql.query(`SELECT COUNT(*) AS count FROM "ads" where	screen_id = ${req.body.screen_id}`);
 	let limit = 12;
 	let limit1;
 	let page = req.body.page;
@@ -250,7 +249,7 @@ Categories.GetAllCategories = async (req, res) => {
 		category = await sql.query(`SELECT  mp.*, (
 			SELECT json_agg( 
 			   json_build_object('id',g.id,'link', g.link,
-			   "image",g.image,'active_status',g.active_status
+			   'image',g.image,'active_status',g.active_status
 			   )
 				   )
 				   FROM ads g
@@ -269,22 +268,12 @@ Categories.GetAllCategories = async (req, res) => {
 	}
 	if (category.rowCount !== 12) {
 		limit1 = parseInt(14 - parseInt(category.rowCount));
-		ads = await sql.query(`SELECT * FROM "ads" ORDER BY "createdat" DESC
+		ads = await sql.query(`SELECT * FROM "ads" where	screen_id = ${req.body.screen_id} ORDER BY "createdat" DESC
 		LIMIT $1 OFFSET $2 ` , [limit1, req.body.AdsOffset]);
 		console.log("ads.rowCount");
 		console.log(ads.rowCount);
 
 		if (category.rowCount === 0) {
-
-			// if (ads.rowCount > 0) {
-			// 	ads.rows[0] = {
-			// 		...ads.rows[0],
-			// 		type: 'ad'
-			// 	}
-			// 	category.rows.splice(0, 0, ads.rows[0]);
-			// 	rowCount++;
-			// }
-
 			for (var i = 1; i < ads.rowCount; i++) {
 				category.rows.push(ads.rows[i]);
 			}
@@ -358,48 +347,11 @@ Categories.GetAllCategories = async (req, res) => {
 			}
 
 
-		// if (category.rowCount > 7  ) {
-		// 	console.log("Here1")
-		// 	if (ads.rowCount > 2) {
-		// 		ads.rows[1] = {
-		// 			...ads.rows[1],
-		// 			type: 'ad'
-		// 		}
-		// 		category.rows.splice(7, 0, ads.rows[1]);
-		// 		rowCount++;
-		// 	}
-		// 	} else {
-		// 		let j = category.rowCount
-		// 		for (let i = category.rowCount; i <= ads.rowCount - 1; i++) {
-		// 			ads.rows[i] = {
-		// 				...ads.rows[i],
-		// 				type: 'ad'
-		// 			}
-		// 			category.rows.splice(i, 0, ads.rows[i]);
-		// 			j++;
-		// 			rowCount++;
-		// 		}
-		// 	}
-
-
-
-
-
-
-
-
 	} else if (category.rowCount >= 12) {
 		limit1 = 2;
 		let offset = (parseInt(page) - 1) * limit1
-		ads = await sql.query(`SELECT * FROM "ads" ORDER BY "createdat" DESC
+		ads = await sql.query(`SELECT * FROM "ads"  where	screen_id = ${req.body.screen_id} ORDER BY "createdat" DESC
 		LIMIT $1 OFFSET $2 ` , [limit1, offset]);
-		// if (ads.rowCount > 0) {
-		// 	ads.rows[0] = {
-		// 		...ads.rows[0],
-		// 		type: 'ad'
-		// 	}
-		// 	category.rows.splice(0, 0, ads.rows[0]);
-		// }
 		if (ads.rowCount > 0) {
 			ads.rows[0] = {
 				...ads.rows[0],
@@ -414,7 +366,6 @@ Categories.GetAllCategories = async (req, res) => {
 			}
 			category.rows.push(ads.rows[1]);
 		}
-
 
 	}
 
