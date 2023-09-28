@@ -206,6 +206,16 @@ CREATE TABLE IF NOT EXISTS public.report_items (
         updatedAt timestamp ,
         PRIMARY KEY (id));
 
+CREATE TABLE IF NOT EXISTS public.help (
+        id SERIAL NOT NULL,
+	user_id INT,
+        email text,
+        query text,
+        createdAt TIMESTAMP DEFAULT NOW(),
+        updatedAt TIMESTAMP DEFAULT NOW(),
+        PRIMARY KEY (id));
+
+
 CREATE TABLE IF NOT EXISTS public.user_block_list (
         id SERIAL NOT NULL,
         user_id INT,
