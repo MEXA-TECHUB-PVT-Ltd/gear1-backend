@@ -19,6 +19,7 @@ report_items.Add = async (req, res) => {
         id SERIAL NOT NULL,
 		report_id text,
         report_by text,
+		report_reason text,
         createdAt timestamp NOT NULL,
         updatedAt timestamp ,
         PRIMARY KEY (id))  ` , (err, result) => {
@@ -29,9 +30,9 @@ report_items.Add = async (req, res) => {
 					err
 				});
 			} else {
-				sql.query(`INSERT INTO report_items (id ,report_id, report_by, createdAt ,updatedAt )
-                            VALUES (DEFAULT, $1  ,  $2, 'NOW()', 'NOW()') RETURNING * `
-					, [req.body.report_id, req.body.report_by], (err, result) => {
+				sql.query(`INSERT INTO report_items (id ,report_id, report_by, createdAt ,updatedAt, report_reason )
+                            VALUES (DEFAULT, $1  ,  $2, 'NOW()', 'NOW()', $3) RETURNING * `
+					, [req.body.report_id, req.body.report_by, req.body.report_reason], (err, result) => {
 						if (err) {
 							console.log(err);
 							res.json({
@@ -64,7 +65,7 @@ report_items.Add = async (req, res) => {
 }
 
 report_items.ViewSpecific = (req, res) => {
-	sql.query(`SELECT "report_items".id AS report_id, "report_items".createdat AS report_create_by,
+	sql.query(`SELECT "report_items".id AS report_id,"report_items".report_reason AS report_reason, "report_items".createdat AS report_create_by,
 	   "items".*, "user"."id" AS user_id, "user"."username" AS user_name,
 	"user"."email" AS email ,"user"."image" AS image ,"user"."cover_image" AS cover_image ,
 	"user"."phone" AS phone , "user"."country_code" AS country_code
@@ -91,7 +92,7 @@ report_items.ViewSpecific = (req, res) => {
 
 }
 report_items.reportBy_UserID = (req, res) => {
-	sql.query(`SELECT "report_items".id AS report_id, "report_items".createdat AS report_create_by, 
+	sql.query(`SELECT "report_items".id AS report_id,"report_items".report_reason AS report_reason, "report_items".createdat AS report_create_by, 
 	  "items".*, "user"."id" AS user_id, "user"."username" AS user_name,
 	"user"."email" AS email ,"user"."image" AS image ,"user"."cover_image" AS cover_image ,
 	"user"."phone" AS phone , "user"."country_code" AS country_code
@@ -133,7 +134,7 @@ report_items.ViewAll = async (req, res) => {
 	let result;
 	if (!page || !limit) {
 		result = await sql.query(`SELECT 
-		"report_items".id AS id, "report_items".createdat AS report_create_by, 
+		"report_items".id AS id,"report_items".report_reason AS report_reason, "report_items".createdat AS report_create_by, 
 
 
 		 "items".name AS item_name ,    "items".id AS item_id, "items".price AS item_price, 
@@ -172,7 +173,7 @@ report_items.ViewAll = async (req, res) => {
 report_items.getCount = async (req, res) => {
 	const data = await sql.query(`SELECT COUNT(*) AS count FROM "report_items" where report_id  = $1 `,
 		[req.body.item_id])
-	sql.query(`SELECT "report_items".id AS report_id, "report_items".createdat AS report_create_by,   "items".*, "user"."id" AS user_id, "user"."username" AS user_name,
+	sql.query(`SELECT "report_items".id AS report_id,"report_items".report_reason AS report_reason, "report_items".createdat AS report_create_by,   "items".*, "user"."id" AS user_id, "user"."username" AS user_name,
 		"user"."email" AS email ,"user"."image" AS image ,"user"."cover_image" AS cover_image ,
 		"user"."phone" AS phone , "user"."country_code" AS country_code
 		FROM "report_items"

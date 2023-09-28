@@ -6,7 +6,7 @@ try{
           cb(null,'images_uploads/' )
       },
       filename:function(req,file,cb){
-          cb(null ,Date.now() + "--" + file.originalname)
+          cb(null , "Gear1_@_"+Date.now()  )
       }
   })
   var upload = multer({storage:storage})
